@@ -3,12 +3,12 @@ Module name:
     router
 Module Description:
     This Module contains basic Building block of NoC Mesh.
-    It is a 5x5 router with 5 input and 5 output ports.
+    It is a 5x5 (NEWS,P) router with 5 input and 5 output ports.
 Data Packet: 
     Packet size of data  is 1 byte, 1 bit for last flit (indicates The last Packet)
 Module Pin Description :
     Clock: 1 bit input port for the clock signal.
-    Reest: 1 bit input port for the reset signal.
+    Reset: 1 bit input port for the reset signal.
     SetNR: 1 bit input port to set the North side port ready reg by master.
     SetSR: 1 bit input port to set the South side port ready reg by master.
     SetER: 1 bit input port to set the East side port ready reg by master.
@@ -36,6 +36,9 @@ Module Pin Description :
     Processor Ready: 1 bit output port to indicate the availability of the Processor side port line.
 Additional Notes:
     regPR: Check whether the path is busy  or not. 0->busy, 1->free
+    
+    Output at each direction can have data from NEWS,P. Therefore,we need 3 select bits in each Router_control_signals in master.v
+
 */
 
 // Start of the module
@@ -138,7 +141,7 @@ module router (
         endcase
     end
     // Output Port Selection
-    always@(posedge clock)
+    always@(posedge clock or posedge SetNR or posedge reset)
     begin
         output_north<=output_north1;
         if(output_north1[8]==1'b1 or reset==1'b1)
@@ -155,7 +158,7 @@ module router (
         end
     end
 
-    always@(posedge clock)
+    always@(posedge clock or posedge setSR or posedge reset)
     begin
         output_south<=output_south1;
         if(output_south1[8]==1'b1 or reset==1'b1)
@@ -172,7 +175,7 @@ module router (
         end
     end
 
-    always@(posedge clock)
+    always@(posedge clock or posedge setER or posedge reset)
     begin
         output_east<=output_east1;
         if(output_east1[8]==1'b1 or reset==1'b1)
@@ -189,7 +192,7 @@ module router (
         end
     end
 
-    always@(posedge clock)
+    always@(posedge clock or posedge setWR or posedge reset)
     begin
         output_west<=output_west1;
         if(output_west1[8]==1'b1 or reset==1'b1)
@@ -206,7 +209,7 @@ module router (
         end
     end
 
-    always@(posedge clock)
+    always@(posedge clock or posedge setPR or posedge reset)
     begin
         output_processor<=output_processor1;
         if(output_processor1[8]==1'b1 or reset==1'b1)
