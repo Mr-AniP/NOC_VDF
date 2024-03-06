@@ -1,212 +1,314 @@
+/*
+Module name: 
+    mesh
+Module Description:
+    This module helps in identifying the possible pathbetween any 2 routers:
+                                    2 - 3
+                                    |   |
+                                    0 - 1
+
+Pin Description:
+    Clock: 1 bit input port for the clock signal.
+    Reset: 1 bit input port for the reset signal.
+    configure_signals: (P0 to P3 in order)
+        8 bit to indicate no of transfers in asingle transaction (burst size)
+        2 bit indicating destination of transfer
+        1 bit indicates testbench is requesting transfer
+    processor_ready_signals: 4 bit output port to indicate the readiness of the processors (in order P3 to P0)
+*/
+
 `include"router.v"
+`include"master.v"
+`include"P_unit.v"
+
 module mesh(
-    input clk,
-    input rst,
+    input clock,
+    input reset,
+    input [10:0]p0_configure,
+    input [10:0]p1_configure,
+    input [10:0]p2_configure,
+    input [10:0]p3_configure,
+    output [3:0] processor_ready_signals;
     );
-    parameter No_data=9'b000000000;
     
-    //wire [9:0] d01,d10,d12,d21,d34,d43,d45,d54,d67,d76,d78,d87,d03,d30,d36,d63,d14,d41,d44,d74,d25,d52,d58,d85;
     wire [9:0] d01,d10,d23,d32,d02,d20,d13,d31;
-    //wire  use01,use10,use23,use32,use02,use20,use13,use31;
-    reg Nr0,Sr0,Er0,Wr0;
-    reg Nr1,Sr1,Er1,Wr1;
-    reg Nr2,Sr2,Er2,Wr2;
-    reg Nr3,Sr3,Er3,Wr3;
+    wire [9:0] d00,d11,d22,d33;
+    wire [9:0] r00,r11,r22,r33;
+    wire Nr0,Sr0,Er0,Wr0;
+    wire Nr1,Sr1,Er1,Wr1;
+    wire Nr2,Sr2,Er2,Wr2;
+    wire Nr3,Sr3,Er3,Wr3;
+    wire Pr0,Pr1,Pr2,Pr3;
     
-    reg [5:0] Path_usage_bits_0;
-    reg [5:0] Path_usage_bits_1;
-    reg [5:0] Path_usage_bits_2;
-    reg [5:0] Path_usage_bits_3;
+    reg [6:0] Path_usage_bits_0;
+    reg [6:0] Path_usage_bits_1;
+    reg [6:0] Path_usage_bits_2;
+    reg [6:0] Path_usage_bits_3;
 
-    reg [23:0] Path_usage_bits;
-
-    // wire [9:0] d00,d11,d22,d33,d44,d55,d66,d77,d88;
-    //wire use_bits[0],use_bits[1],use_bits[2],use_bits[3],use_bits[4],use_bits[5],use_bits[6],use_bits[7],use_bits[8],use_bits[9],use_bits[10],use_bits[11],use_bits[12],use_bits[13],use_bits[14],use_bits[15],use_bits[16],use_bits[17],use_bits[18],use_bits[19],use_bits[20],use_bits[21],use_bits[22],use_bits[23];
-    //wire [7:0]use_bits;
+    wire [27:0] Path_usage_bits;
     
+    wire [3:0] response_signals;
+    wire [3:1] P0_signals;
+    wire [3:1] P1_signals;
+    wire [3:1] P2_signals;
+    wire [3:1] P3_signals;
+    wire [19:0] R0_control_signals;
+    wire [19:0] R1_control_signals;
+    wire [19:0] R2_control_signals;
+    wire [19:0] R3_control_signals;
+    
+    master m0(
+        .clock(clock),
+        .reset(reset),
+        .Path_free_bits(Path_usage_bits),
+        .P0_signals(P0_signals),
+        .P1_signals(P1_signals),
+        .P2_signals(P2_signals),
+        .P3_signals(P3_signals),
+        .R0_control_signals(R0_control_signals),
+        .R1_control_signals(R1_control_signals),
+        .R2_control_signals(R2_control_signals),
+        .R3_control_signals(R3_control_signals),
+        .response_signals(response_signals)
+    );
+    
+    Processing_unit p0(
+            .clock(clock),
+            .reset(reset),
+            .master_response(response_signals[0]),
+            .data_from_router(r00),
+            .data_to_router(d00),
+            .request_transfer(P0_signals[1]),
+            .which_processor(P0_signals[3:2]),
+            .processor_ready(processor_ready_signals[0]),
+            .tb_request(p0_configure[0]),
+            .tb_processor(p0_configure[2:1]),
+            .tb_len(p0_configure[10:3])
+    );
 //Set commands by master
     router r0(
-        .clk(clock),
-        .rst(reset),
-        .select_north(),
-        .select_south(),
-        .select_east(),
-        .select_west(),
-        .select_processor(),
+        .clock(clock),
+        .reset(reset),
+        .select_north(R0_control_signals[19:17]),
+        .select_south(R0_control_signals[16:14]),
+        .select_east(R0_control_signals[13:11]),
+        .select_west(R0_control_signals[10:8]),
+        .select_processor(R0_control_signals[7:5]),
         .data_north(d20),
-        .data_south(No_data),
+        .data_south(),
         .data_east(d10),
-        .data_west(No_data),
-        .data_processor(),
+        .data_west(),
+        .data_processor(d00),
         .output_north(d02),
         .output_south(),
         .output_east(d01),
         .output_west(),
-        .output_processor(),
+        .output_processor(r00),
         .north_ready(Nr0),
         .south_ready(Sr0),
         .east_ready(Er0),
         .west_ready(Wr0),
-        .processor_ready()
-        .SetNR(),
-        .SetSR(),
-        .SetER(),
-        .SetWR(),
-        .SetPR()
+        .processor_ready(Pr0)
+        .SetNR(R0_control_signals[4]),
+        .SetSR(R0_control_signals[3]),
+        .SetER(R0_control_signals[2]),
+        .SetWR(R0_control_signals[1]),
+        .SetPR(R0_control_signals[0])
     );
     
+    Processing_unit p1(
+            .clock(clock),
+            .reset(reset),
+            .master_response(response_signals[1]),
+            .data_from_router(r11),
+            .data_to_router(d11),
+            .request_transfer(P1_signals[1]),
+            .which_processor(P1_signals[3:2]),
+            .processor_ready(processor_ready_signals[1]),
+            .tb_request(p1_configure[0]),
+            .tb_processor(p1_configure[2:1]),
+            .tb_len(p1_configure[10:3])
+    );
     router r1(
-        .clk(clock)
-        .select_north(),
-        .select_south(),
-        .select_east(),
-        .select_west(),
-        .select_processor(),
-        .data_north(d41),
-        .data_south(No_data),
-        .data_east(d21),
+        .clock(clock),
+        .reset(reset),
+        .select_north(R1_control_signals[19:17]),
+        .select_south(R1_control_signals[16:14]),
+        .select_east(R1_control_signals[13:11]),
+        .select_west(R1_control_signals[10:8]),
+        .select_processor(R1_control_signals[7:5]),
+        .data_north(d31),
+        .data_south(),
+        .data_east(),
         .data_west(d01),
-        .data_processor(),
-        .output_north(d14),
+        .data_processor(d11),
+        .output_north(d13),
         .output_south(),
-        .output_east(d12),
+        .output_east(),
         .output_west(d10),
-        .output_processor(),
+        .output_processor(r11),
         .north_ready(Nr1),
         .south_ready(Sr1),
         .east_ready(Er1),
         .west_ready(Wr1),
-        .processor_ready()
-        .SetNR(),
-        .SetSR(),
-        .SetER(),
-        .SetWR(),
-        .SetPR()
+        .processor_ready(Pr1),
+        .SetNR(R1_control_signals[4]),
+        .SetSR(R1_control_signals[3]),
+        .SetER(R1_control_signals[2]),
+        .SetWR(R1_control_signals[1]),
+        .SetPR(R1_control_signals[0])
     );
-
+    Processing_unit p2(
+            .clock(clock),
+            .reset(reset),
+            .master_response(response_signals[2]),
+            .data_from_router(r22),
+            .data_to_router(d22),
+            .request_transfer(P2_signals[1]),
+            .which_processor(P2_signals[3:2]),
+            .processor_ready(processor_ready_signals[2]),
+            .tb_request(p2_configure[0]),
+            .tb_processor(p2_configure[2:1]),
+            .tb_len(p2_configure[10:3])
+    );
     router r2(
-        .clk(clock),
-        .select_north(),
-        .select_south(),
-        .select_east(),
-        .select_west(),
-        .select_processor(),
-        .data_north(d52),
-        .data_south(No_data),
-        .data_east(No_data),
-        .data_west(d12),
-        .data_processor(),
-        .output_north(d25),
-        .output_south(),
-        .output_east(),
-        .output_west(d21),
-        .output_processor(),
+        .clock(clock),
+        .reset(reset),
+        .select_north(R2_control_signals[19:17]),
+        .select_south(R2_control_signals[16:14]),
+        .select_east(R2_control_signals[13:11]),
+        .select_west(R2_control_signals[10:8]),
+        .select_processor(R2_control_signals[7:5]),
+        .data_north(),
+        .data_south(d02),
+        .data_east(d32),
+        .data_west(),
+        .data_processor(d22),
+        .output_north(),
+        .output_south(d20),
+        .output_east(d23),
+        .output_west(),
+        .output_processor(r22),
         .north_ready(Nr2),
         .south_ready(Sr2),
         .east_ready(Er2),
         .west_ready(Wr2),
-        .processor_ready() 
-        .SetNR(),
-        .SetSR(),
-        .SetER(),
-        .SetWR(),
-        .SetPR()    
+        .processor_ready(Pr2),
+        .SetNR(R2_control_signals[4]),
+        .SetSR(R2_control_signals[3]),
+        .SetER(R2_control_signals[2]),
+        .SetWR(R2_control_signals[1]),
+        .SetPR(R2_control_signals[0])
     );
-
+    Processing_unit p3(
+            .clock(clock),
+            .reset(reset),
+            .master_response(response_signals[3]),
+            .data_from_router(r33),
+            .data_to_router(d33),
+            .request_transfer(P3_signals[1]),
+            .which_processor(P3_signals[3:2]),
+            .processor_ready(processor_ready_signals[3]),
+            .tb_request(p3_configure[0]),
+            .tb_processor(p3_configure[2:1]),
+            .tb_len(p3_configure[10:3])
+    );
     router r3(
-        .clk(clock),
-        .select_north(),
-        .select_south(),
-        .select_east(),
-        .select_west(),
-        .select_processor(),
-        .data_north(d63),
-        .data_south(d03),
-        .data_east(d43),
-        .data_west(No_data),
-        .data_processor(),
-        .output_north(d36),
-        .output_south(d30),
-        .output_east(d34),
-        .output_west(),
-        .output_processor(),
+        .clock(clock),
+        .reset(reset),
+        .select_north(R3_control_signals[19:17]),
+        .select_south(R3_control_signals[16:14]),
+        .select_east(R3_control_signals[13:11]),
+        .select_west(R3_control_signals[10:8]),
+        .select_processor(R3_control_signals[7:5]),
+        .data_north(),
+        .data_south(d13),
+        .data_east(),
+        .data_west(d23),
+        .data_processor(d33),
+        .output_north(),
+        .output_south(d31),
+        .output_east(),
+        .output_west(d32),
+        .output_processor(r33),
         .north_ready(Nr3),
         .south_ready(Sr3),
         .east_ready(Er3),
         .west_ready(Wr3),
-        .processor_ready(),
-        
-        .SetNR(),
-        .SetSR(),
-        .SetER(),
-        .SetWR(),
-        .SetPR()
+        .processor_ready(Pr3),
+        .SetNR(R3_control_signals[4]),
+        .SetSR(R3_control_signals[3]),
+        .SetER(R3_control_signals[2]),
+        .SetWR(R3_control_signals[1]),
+        .SetPR(R3_control_signals[0])
     );
 
     always @ (*) //router 0
     begin
+        Path_usage_bits_0[0] = Pr0; //0 to 0
         
-        Path_usage_bits_0[0] = Er0; //0to1 //flat
-        Path_usage_bits_0[1] = Nr0|Er2|Sr3|; //0 to 1 longer
+        Path_usage_bits_0[1] = Er0 & Pr1 ; //0 to 1 //flat
+        Path_usage_bits_0[2] = Nr0 & Er2 & Sr3 & Pr1; //0 to 1 longer
 
-        Path_usage_bits_0[2] = Nr0; //0 to 2 //vertical
-        Path_usage_bits_0[3] = Er0|Nr1|Wr3; //0 to 2 longer
+        Path_usage_bits_0[3] = Nr0 & Pr2; //0 to 2 //vertical
+        Path_usage_bits_0[4] = Er0 & Nr1 & Wr3 & Pr2; //0 to 2 longer
 
-        Path_usage_bits_0[4] = Nr0|Er2 //0 to 3 //diagonal (vertical)
-        Path_usage_bits_0[5] = Er0|Nr1; //0 to 3 (flat)
+        Path_usage_bits_0[5] = Nr0 & Er2 & Pr3 //0 to 3 //diagonal (vertical)
+        Path_usage_bits_0[6] = Er0 & Nr1 & Pr3; //0 to 3 (flat)
 
     end
     
 
     always @ (*) //router1
     begin
-        Path_usage_bits_1[0] = Er1; //1 to 0 //flat
-        Path_usage_bits_1[1] = Nr1|Wr3|Sr2; //1 to 0 longer
+        Path_usage_bits_1[0] = Pr1; //1 to 1
 
-        Path_usage_bits_1[2] = Nr1; //1 to 3 //vertical
-        Path_usage_bits_1[3] = Wr1|Nr0|Er2; // 1 to 3 longer
+        Path_usage_bits_1[1] = Er1 & Pr0; //1 to 0 //flat
+        Path_usage_bits_1[2] = Nr1 & Wr3 & Sr2 & Pr0; //1 to 0 longer
+
+        Path_usage_bits_1[3] = Nr1 & Pr3; //1 to 3 //vertical
+        Path_usage_bits_1[4] = Wr1 & Nr0 & Er2 & Pr3; // 1 to 3 longer
         
-        Path_usage_bits_1[4] = Nr1|Wr3; // 1 to 2 //diagonal (vertical)
-        Path_usage_bits_1[5] = Wr1|Nr0; //1 to 2 (flat)
+        Path_usage_bits_1[5] = Nr1 & Wr3 & Pr2; // 1 to 2 //diagonal (vertical)
+        Path_usage_bits_1[6] = Wr1 & Nr0 & Pr2; //1 to 2 (flat)
 
     end
 
     
     always @ (*) //router2
     begin
-        Path_usage_bits_2[0] = Er2; //2 to 3 //flat
-        Path_usage_bits_2[1] = Sr2|Er0|Nr1; //2 to 3 longer
+        Path_usage_bits_2[0] = Pr2; //2 to 2
 
-        Path_usage_bits_2[2] = Sr2; //2 to 0 //vertical
-        Path_usage_bits_2[3] = Er2|Sr3|Wr1; //2 to 0 longer
+        Path_usage_bits_2[1] = Er2 & Pr3; //2 to 3 //flat
+        Path_usage_bits_2[2] = Sr2 & Er0 & Nr1 & Pr3; //2 to 3 longer
 
-        Path_usage_bits_2[4] = Sr2|Er0; //2 to 1 //diagonal (vertical)
-        Path_usage_bits_2[5] = Er2|Sr3;  //2 to 1 (flat)
+        Path_usage_bits_2[3] = Sr2 & Pr0; //2 to 0 //vertical
+        Path_usage_bits_2[4] = Er2 & Sr3 & Wr1 & Pr0; //2 to 0 longer
+
+        Path_usage_bits_2[5] = Sr2 & Er0 & Pr1; //2 to 1 //diagonal (vertical)
+        Path_usage_bits_2[6] = Er2 & Sr3 & Pr1;  //2 to 1 (flat)
 
     end
     
     always @ (*) //router3
     begin
-        Path_usage_bits_3[0] = Wr3; //3 to 2 //flat
-        Path_usage_bits_3[1] = Sr3|Wr1|Nr0; //3 to 2 longer
+        Path_usage_bits_3[0] = Pr3; // 3 to 3
 
-        Path_usage_bits_3[2] = Sr3; //3 to 1 //vertical
-        Path_usage_bits_3[3] = Wr3|Sr2|Er0; //3 to 1 longer
+        Path_usage_bits_3[1] = Wr3 & Pr2; //3 to 2 //flat
+        Path_usage_bits_3[2] = Sr3 & Wr1 & Nr0 & Pr2; //3 to 2 longer
 
-        Path_usage_bits_3[4] = Sr3|Wr1; //3 to 0 //diagonal (vertical)
-        Path_usage_bits_3[5] = Wr3|Sr2;  //3 to 0 (flat)
+        Path_usage_bits_3[3] = Sr3 & Pr1; //3 to 1 //vertical
+        Path_usage_bits_3[4] = Wr3 & Sr2 & Er0 & Pr1; //3 to 1 longer
+
+        Path_usage_bits_3[5] = Sr3 & Wr1 & Pr0; //3 to 0 //diagonal (vertical)
+        Path_usage_bits_3[6] = Wr3 & Sr2 & Pr0;  //3 to 0 (flat)
 
     end
 
-    Path_usage_bits = {Path_usage_bits_0, Path_usage_bits_1, Path_usage_bits_2, Path_usage_bits_3}
+    assign Path_usage_bits = { Path_usage_bits_0, Path_usage_bits_1, Path_usage_bits_2, Path_usage_bits_3};
 endmodule
 
-
-
-
-
-
-
+// Old khichri (no need to look here)
 // module main (
 // );
 // wire d01,d10,d12,d21,d34,d43,d45,d54,d67,d76,d78,d87,d03,d30,d36,d63,,d14,d41,d44,d74,d25,d52,d58,d85; // cross edges
