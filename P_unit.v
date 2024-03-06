@@ -1,3 +1,22 @@
+/*
+Module name: 
+    Processing_unit
+Module Description:
+    This Module contains demonstrates the working of our processor.
+Pin Description:
+    Clock: 1 bit input port for the clock signal.
+    Reset: 1 bit input port for the reset signal.
+    master_response: 1 bit input which shows the availability of processor (1->Master has accepted the request of processor)
+    data_from_router: 9bit input reg which contains the data received from the router to its corresponding processor
+    data_to_router: 9bit output reg which contains the data processor sends to its corresponding router
+    request_transfer: 1bit output where processor requests master for allocation (1->request is high)
+    which_processor: 2 bit output register corresponding to the destination router/processor
+    processor_ready: 1 bit output indicates the processor is free to send out data
+    tb_request: 1 bit input which is the value user gives to processor to use as request_transfer
+    tb_processor: 2 bit output reg is the value user gives to processor to use as which_processor
+    tb_len: 8 bit output reg is the value user gives to processor the burst size
+*/
+
 module Processing_unit(
     input clock,
     input reset,
@@ -47,22 +66,22 @@ module Processing_unit(
     begin
         if(counter_value==tb_len)
         begin
-            tlast<=1;
+            tlast=1;
         end
         else
         begin
-            tlast<=0;
+            tlast=0;
         end
     end
-    always@(posedge clock or posedge reset)
+    always@(posedge clock or posedge reset) //next packet
     begin
         if(reset==1'b1)
         begin
-            counter_value<=8'b0;
+            counter_value<=8'b00000001;
         end
         else if(request_line==1)
         begin
-            counter_value<=8'b0;
+            counter_value<=8'b00000001;
         end
         else
         begin
@@ -81,9 +100,4 @@ module Processing_unit(
         end
     end
     assign processor_ready=processor_ready1;
-    // always@(negedge request_transfer)
-    // begin
-    //     // set data
-    //     data_to_router<=0;
-    // end
 endmodule
