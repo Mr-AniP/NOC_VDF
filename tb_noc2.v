@@ -5,13 +5,15 @@ module tb_noc();
     reg reset=0;
     wire [3:0] processor_ready_signals;
     reg [10:0] p0_configure,p1_configure,p2_configure,p3_configure;
+    wire [19:0] temp_path_block_signals;
     mesh m1 (.clock(clk), 
             .reset(reset),
             .p0_configure(p0_configure),
             .p1_configure(p1_configure),
             .p2_configure(p2_configure),
             .p3_configure(p3_configure),
-            .processor_ready_signals(processor_ready_signals)
+            .processor_ready_signals(processor_ready_signals),
+            .temp_path_block_signals(temp_path_block_signals)
             );
     initial
     begin
