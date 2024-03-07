@@ -69,15 +69,17 @@ module router (
     input SetSR,
     input SetER,
     input SetWR,
-    input SetPR;
+    input SetPR
     );
 // internal working
     reg [8:0] output_north1,output_south1,output_east1,output_west1,output_processor1;
     reg regNR,regSR,regER,regWR,regPR;
+    reg regNR1,regSR1,regER1,regWR1,regPR1;
     // Data Packet Routing (Crossbar Working)
+    
     always@(*)
     begin 
-        case(select_north)
+        case(select_north) //choosing which input of router will go 
             3'b000: output_north1 = data_north;
             3'b001: output_north1 = data_south;
             3'b010: output_north1 = data_east;
@@ -141,14 +143,89 @@ module router (
         endcase
     end
     // Output Port Selection
-    always@(posedge clock or posedge SetNR or posedge reset)
+    always@(*)
+    begin
+        if(output_north1[8]==1'b1)
+        begin
+            regNR1<=1;
+        end
+        else if(SetNR==1'b1)
+        begin
+            regNR1<=0;
+        end
+        else
+        begin
+            regNR1<=regNR;
+        end
+    end
+    always@(*)
+    begin
+        if(output_south1[8]==1'b1)
+        begin
+            regSR1<=1;
+        end
+        else if(SetSR==1'b1)
+        begin
+            regSR1<=0;
+        end
+        else
+        begin
+            regSR1<=regSR;
+        end
+    end
+    always@(*)
+    begin
+        if(output_east1[8]==1'b1)
+        begin
+            regER1<=1;
+        end
+        else if(SetER==1'b1)
+        begin
+            regER1<=0;
+        end
+        else
+        begin
+            regER1<=regER;
+        end
+    end
+    always@(*)
+    begin
+        if(output_west1[8]==1'b1)
+        begin
+            regWR1<=1;
+        end
+        else if(SetWR==1'b1)
+        begin
+            regWR1<=0;
+        end
+        else
+        begin
+            regWR1<=regWR;
+        end
+    end
+    always@(*)
+    begin
+        if(output_processor1[8]==1'b1)
+        begin
+            regPR1<=1;
+        end
+        else if(SetPR==1'b1)
+        begin
+            regPR1<=0;
+        end
+        else
+        begin
+            regPR1<=regPR;
+        end
+    end
+    always@(posedge clock or posedge reset)
     begin
         output_north<=output_north1;
-        if(output_north1[8]==1'b1 or reset==1'b1)
+        if(reset==1'b1)
         begin
             regNR<=1;
         end
-        else if(setPR==1'b1)
+        else if(SetNR==1'b1)
         begin
             regNR<=0;
         end
@@ -157,72 +234,52 @@ module router (
             regNR<=regNR;
         end
     end
-
-    always@(posedge clock or posedge setSR or posedge reset)
+    always@(posedge clock or posedge reset)
     begin
         output_south<=output_south1;
-        if(output_south1[8]==1'b1 or reset==1'b1)
+        if(reset==1'b1)
         begin
             regSR<=1;
         end
-        else if(setSR==1'b1 or reset==1'b1)
-        begin
-            regSR<=0;
-        end
         else
         begin
-            regSR<=regSR;
+            regSR<=regSR1;
         end
     end
-
-    always@(posedge clock or posedge setER or posedge reset)
+    always@(posedge clock or posedge reset)
     begin
         output_east<=output_east1;
-        if(output_east1[8]==1'b1 or reset==1'b1)
+        if(reset==1'b1)
         begin
             regER<=1;
         end
-        else if(setER==1'b1)
-        begin
-            regER<=0;
-        end
         else
         begin
-            regER<=regER;
+            regER<=regER1;
         end
     end
-
-    always@(posedge clock or posedge setWR or posedge reset)
+    always@(posedge clock or posedge reset)
     begin
         output_west<=output_west1;
-        if(output_west1[8]==1'b1 or reset==1'b1)
+        if(reset==1'b1)
         begin
             regWR<=1;
         end
-        else if(setWR==1'b1)
-        begin
-            regWR<=0;
-        end
         else
         begin
-            regWR<=regWR;
+            regWR<=regWR1;
         end
     end
-
-    always@(posedge clock or posedge setPR or posedge reset)
+    always@(posedge clock or posedge reset)
     begin
         output_processor<=output_processor1;
-        if(output_processor1[8]==1'b1 or reset==1'b1)
+        if(reset==1'b1)
         begin
-            regPR<=1; //making it free
-        end
-        else if(setPR==1'b1)// master wants path to be made busy
-        begin
-            regPR<=0;   //made busy
+            regPR<=1;
         end
         else
         begin
-            regPR<=regPR;//retain
+            regPR<=regPR1;
         end
     end
     // Assigning ussage bit
