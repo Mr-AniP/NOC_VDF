@@ -1,4 +1,5 @@
 `include "main.v"
+
 module tb_noc();
     reg clk=0;
     reg reset=0;
@@ -14,17 +15,20 @@ module tb_noc();
             );
     initial
     begin
-        #15 reset = 1'b1;
-        #15 reset = 1'b0;
+         // $display("in");
+        $dumpfile("noc_sim.vcd");
+        $dumpvars(0,tb_noc);
+        // clock_t=1'b0;
+        reset=1'b0;
+        #1 reset = 1'b1;
+        #16 reset = 1'b0;
         #2 p0_configure = 11'b00001000011;
         p1_configure = 11'b00000100111;
         p2_configure = 11'b00010000001;
         p3_configure = 11'b01000000101;
-        #1000
-        $finish;
+        // #29$finish;
+        #2000$finish;
     end
-    always@(*)
-    begin
-        clk = #10 ~clk;
-    end
+    always #10 clk = ~clk;
+
 endmodule
