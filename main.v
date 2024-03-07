@@ -369,7 +369,7 @@ module mesh(
 
     // end
 
-    assign Path_usage_bits = { Path_usage_bits_0, Path_usage_bits_1, Path_usage_bits_2, Path_usage_bits_3};
+    assign Path_usage_bits = { Path_usage_bits_3, Path_usage_bits_2, Path_usage_bits_1, Path_usage_bits_0};
 endmodule
 
 
