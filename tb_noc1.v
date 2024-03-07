@@ -20,13 +20,19 @@ module tb_noc();
         $dumpvars(0,tb_noc);
         // clock_t=1'b0;
         reset=1'b0;
+        p0_configure=11'b0;
+        p1_configure=11'b0;
+        p2_configure=11'b0;
+        p3_configure=11'b0;
         #1 reset = 1'b1;
         #16 reset = 1'b0;
         #2 p0_configure = 11'b01000000101;
-        #60 p0_configure = 11'b01000000011;
+        #50 p0_configure=11'b0;
+        #10 p1_configure = 11'b01000000001;
         p3_configure = 11'b01000000001;
+        #60 p1_configure=11'b0;
         // #29$finish;
-        #2000 $finish;
+        #4000 $finish;
     end
     always #10 clk = ~clk;
 
