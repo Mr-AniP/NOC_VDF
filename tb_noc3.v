@@ -32,10 +32,10 @@ module tb_noc();
         p1_configure = 11'b00000001101;
         p2_configure = 11'b00000001111;
         p3_configure = 11'b00000001001;
-        #80 p0_configure = 11'b0;
+        #110 p0_configure = 11'b0;
         #40 p1_configure = 11'b0;
         #80 p2_configure = 11'b0;
-        #80 p3_configure = 11'b0;
+        #160 p3_configure = 11'b0;
         // #29$finish;
         #4000 $finish;
     end
