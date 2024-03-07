@@ -2,16 +2,15 @@
 Module name: 
     mesh
 Module Description:
-    This module helps in identifying the possible pathbetween any 2 routers:
+    This module helps in identifying the possible paths between any 2 routers:
                                     2 - 3
                                     |   |
                                     0 - 1
-
 Pin Description:
     Clock: 1 bit input port for the clock signal.
     Reset: 1 bit input port for the reset signal.
     configure_signals: (P0 to P3 in order)
-        8 bit to indicate no of transfers in asingle transaction (burst size)
+        8 bit to indicate no of transfers in a single transaction (burst size)
         2 bit indicating destination of transfer
         1 bit indicates testbench is requesting transfer
     processor_ready_signals: 4 bit output port to indicate the readiness of the processors (in order P3 to P0)
@@ -28,12 +27,12 @@ module mesh(
     input [10:0]p1_configure,
     input [10:0]p2_configure,
     input [10:0]p3_configure,
-    output [3:0] processor_ready_signals;
+    output [3:0] processor_ready_signals
     );
     
-    wire [9:0] d01,d10,d23,d32,d02,d20,d13,d31;
-    wire [9:0] d00,d11,d22,d33;
-    wire [9:0] r00,r11,r22,r33;
+    wire [8:0] d01,d10,d23,d32,d02,d20,d13,d31;
+    wire [8:0] d00,d11,d22,d33;
+    wire [8:0] r00,r11,r22,r33;
     wire Nr0,Sr0,Er0,Wr0;
     wire Nr1,Sr1,Er1,Wr1;
     wire Nr2,Sr2,Er2,Wr2;
@@ -56,11 +55,12 @@ module mesh(
     wire [19:0] R1_control_signals;
     wire [19:0] R2_control_signals;
     wire [19:0] R3_control_signals;
-    
+    wire [19:0] temp_path_block_signals;
+//instantiation
     master m0(
         .clock(clock),
         .reset(reset),
-        .Path_free_bits(Path_usage_bits),
+        .path_free_bits(Path_usage_bits),
         .P0_signals(P0_signals),
         .P1_signals(P1_signals),
         .P2_signals(P2_signals),
@@ -69,7 +69,8 @@ module mesh(
         .R1_control_signals(R1_control_signals),
         .R2_control_signals(R2_control_signals),
         .R3_control_signals(R3_control_signals),
-        .response_signals(response_signals)
+        .response_signals(response_signals),
+        .temp_path_block_signals(temp_path_block_signals)
     );
     
     Processing_unit p0(
@@ -108,7 +109,7 @@ module mesh(
         .south_ready(Sr0),
         .east_ready(Er0),
         .west_ready(Wr0),
-        .processor_ready(Pr0)
+        .processor_ready(Pr0),
         .SetNR(R0_control_signals[4]),
         .SetSR(R0_control_signals[3]),
         .SetER(R0_control_signals[2]),
@@ -243,34 +244,34 @@ module mesh(
         .SetPR(R3_control_signals[0])
     );
 
-    always @ (*) //router 0
+    always @ (posedge clock) //router 0
     begin
-        Path_usage_bits_0[0] = Pr0; //0 to 0
+        Path_usage_bits_0[0] = Pr0 ; //0 to 0
         
-        Path_usage_bits_0[1] = Er0 & Pr1 ; //0 to 1 //flat
-        Path_usage_bits_0[2] = Nr0 & Er2 & Sr3 & Pr1; //0 to 1 longer
+        Path_usage_bits_0[1] = Er0 & Pr1; //0 to 1 //flat
+        Path_usage_bits_0[2] = Nr0 & Er2 & Sr3 & Pr1 ; //0 to 1 longer 0-2-3-1
 
         Path_usage_bits_0[3] = Nr0 & Pr2; //0 to 2 //vertical
-        Path_usage_bits_0[4] = Er0 & Nr1 & Wr3 & Pr2; //0 to 2 longer
+        Path_usage_bits_0[4] = Er0 & Nr1 & Wr3 & Pr2; //0 to 2 longer 0-1-3-2
 
-        Path_usage_bits_0[5] = Nr0 & Er2 & Pr3 //0 to 3 //diagonal (vertical)
-        Path_usage_bits_0[6] = Er0 & Nr1 & Pr3; //0 to 3 (flat)
+        Path_usage_bits_0[5] = Nr0  & Er2  & Pr3 ; //0 to 3 //diagonal (vertical) 0-2-3
+        Path_usage_bits_0[6] = Er0 & Nr1  & Pr3 ; //0 to 3 (flat) 0-1-3
 
     end
     
 
     always @ (*) //router1
     begin
-        Path_usage_bits_1[0] = Pr1; //1 to 1
+        Path_usage_bits_1[0] = Pr1 ; //1 to 1
 
         Path_usage_bits_1[1] = Er1 & Pr0; //1 to 0 //flat
-        Path_usage_bits_1[2] = Nr1 & Wr3 & Sr2 & Pr0; //1 to 0 longer
+        Path_usage_bits_1[2] = Nr1  & Wr3 & Sr2 & Pr0 ; //1 to 0 longer 1-3-2-0
 
-        Path_usage_bits_1[3] = Nr1 & Pr3; //1 to 3 //vertical
-        Path_usage_bits_1[4] = Wr1 & Nr0 & Er2 & Pr3; // 1 to 3 longer
+        Path_usage_bits_1[3] = Nr1  & Pr3 ; //1 to 3 //vertical
+        Path_usage_bits_1[4] = Wr1  & Nr0 & Er2 & Pr3 ; // 1 to 3 longer 1-0-2-3
         
-        Path_usage_bits_1[5] = Nr1 & Wr3 & Pr2; // 1 to 2 //diagonal (vertical)
-        Path_usage_bits_1[6] = Wr1 & Nr0 & Pr2; //1 to 2 (flat)
+        Path_usage_bits_1[5] = Nr1 & Wr3 & Pr2 ; // 1 to 2 //diagonal (vertical) 1-3-2
+        Path_usage_bits_1[6] = Wr1 & Nr0 & Pr2 ; //1 to 2 (flat) 1-0-2
 
     end
 
@@ -279,36 +280,102 @@ module mesh(
     begin
         Path_usage_bits_2[0] = Pr2; //2 to 2
 
-        Path_usage_bits_2[1] = Er2 & Pr3; //2 to 3 //flat
-        Path_usage_bits_2[2] = Sr2 & Er0 & Nr1 & Pr3; //2 to 3 longer
+        Path_usage_bits_2[1] = Er2 & Pr3 ; //2 to 3 //flat
+        Path_usage_bits_2[2] = Sr2  & Er0  & Nr1  & Pr3 ; //2 to 3 longer 2-0-1-3
 
         Path_usage_bits_2[3] = Sr2 & Pr0; //2 to 0 //vertical
-        Path_usage_bits_2[4] = Er2 & Sr3 & Wr1 & Pr0; //2 to 0 longer
+        Path_usage_bits_2[4] = Er2 & Sr3  & Wr1  & Pr0 ; //2 to 0 longer 2-3-1-0
 
-        Path_usage_bits_2[5] = Sr2 & Er0 & Pr1; //2 to 1 //diagonal (vertical)
-        Path_usage_bits_2[6] = Er2 & Sr3 & Pr1;  //2 to 1 (flat)
+
+        Path_usage_bits_2[5] = Sr2 & Er0  & Pr1 ; //2 to 1 //diagonal (vertical) 2-0-1
+        Path_usage_bits_2[6] = Er2 & Sr3  & Pr1 ;  //2 to 1 (flat) 2-3-1
 
     end
     
     always @ (*) //router3
     begin
-        Path_usage_bits_3[0] = Pr3; // 3 to 3
+        Path_usage_bits_3[0] = Pr3 ; // 3 to 3
 
-        Path_usage_bits_3[1] = Wr3 & Pr2; //3 to 2 //flat
-        Path_usage_bits_3[2] = Sr3 & Wr1 & Nr0 & Pr2; //3 to 2 longer
+        Path_usage_bits_3[1] = Wr3  & Pr2 ; //3 to 2 //flat
+        Path_usage_bits_3[2] = Sr3  & Wr1 & Nr0 & Pr2 ; //3 to 2 longer 3-1-0-2
 
-        Path_usage_bits_3[3] = Sr3 & Pr1; //3 to 1 //vertical
-        Path_usage_bits_3[4] = Wr3 & Sr2 & Er0 & Pr1; //3 to 1 longer
+        Path_usage_bits_3[3] = Sr3 & Pr1 ; //3 to 1 //vertical
+        Path_usage_bits_3[4] = Wr3  & Sr2  & Er0 & Pr1 ; //3 to 1 longer 3-2-0-1
 
-        Path_usage_bits_3[5] = Sr3 & Wr1 & Pr0; //3 to 0 //diagonal (vertical)
-        Path_usage_bits_3[6] = Wr3 & Sr2 & Pr0;  //3 to 0 (flat)
+        Path_usage_bits_3[5] = Sr3  & Wr1 & Pr0 ; //3 to 0 //diagonal (vertical) 3-1-0
+        Path_usage_bits_3[6] = Wr3  & Sr2  & Pr0;  //3 to 0 (flat) 3-2-0
 
     end
+
+    // always @ (*) //router 0
+    // begin
+    //     Path_usage_bits_0[0] = Pr0 & temp_path_block_signals[0]; //0 to 0
+        
+    //     Path_usage_bits_0[1] = Er0 & temp_path_block_signals[2] & Pr1 & temp_path_block_signals[5]; //0 to 1 //flat
+    //     Path_usage_bits_0[2] = Nr0 & temp_path_block_signals[4] & Er2 & temp_path_block_signals[12] & Sr3 & temp_path_block_signals[18] & Pr1 & temp_path_block_signals[5]; //0 to 1 longer 0-2-3-1
+
+    //     Path_usage_bits_0[3] = Nr0 & temp_path_block_signals[4] & Pr2 & temp_path_block_signals[10]; //0 to 2 //vertical
+    //     Path_usage_bits_0[4] = Er0 & Nr1 & Wr3 & Pr2; //0 to 2 longer 0-1-3-2
+
+    //     Path_usage_bits_0[5] = Nr0 & temp_path_block_signals[4] & Er2 & temp_path_block_signals[12] & Pr3 & temp_path_block_signals[15]; //0 to 3 //diagonal (vertical) 0-2-3
+    //     Path_usage_bits_0[6] = Er0 & temp_path_block_signals[2] & Nr1 & temp_path_block_signals[9] & Pr3 & temp_path_block_signals[15]; //0 to 3 (flat) 0-1-3
+
+    // end
+    
+
+    // always @ (*) //router1
+    // begin
+    //     Path_usage_bits_1[0] = Pr1 & temp_path_block_signals[5]; //1 to 1
+
+    //     Path_usage_bits_1[1] = Er1 & temp_path_block_signals[7] & Pr0 & temp_path_block_signals[0]; //1 to 0 //flat
+    //     Path_usage_bits_1[2] = Nr1 & temp_path_block_signals[9] & Wr3 & temp_path_block_signals[16] & Sr2 & temp_path_block_signals[13] & Pr0 & temp_path_block_signals[0]; //1 to 0 longer 1-3-2-0
+
+    //     Path_usage_bits_1[3] = Nr1 & temp_path_block_signals[9] & Pr3 & temp_path_block_signals[15]; //1 to 3 //vertical
+    //     Path_usage_bits_1[4] = Wr1 & temp_path_block_signals[6] & Nr0 & temp_path_block_signals[4] & Er2 & temp_path_block_signals[12] & Pr3 & temp_path_block_signals[15]; // 1 to 3 longer 1-0-2-3
+        
+    //     Path_usage_bits_1[5] = Nr1 & temp_path_block_signals[9] & Wr3 & temp_path_block_signals[16] & Pr2 & temp_path_block_signals[10]; // 1 to 2 //diagonal (vertical) 1-3-2
+    //     Path_usage_bits_1[6] = Wr1 & temp_path_block_signals[6] & Nr0 & temp_path_block_signals[4] & Pr2 & temp_path_block_signals[10]; //1 to 2 (flat) 1-0-2
+
+    // end
+
+    
+    // always @ (*) //router2
+    // begin
+    //     Path_usage_bits_2[0] = Pr2 & temp_path_block_signals[10]; //2 to 2
+
+    //     Path_usage_bits_2[1] = Er2 & temp_path_block_signals[12] & Pr3 & temp_path_block_signals[15]; //2 to 3 //flat
+    //     Path_usage_bits_2[2] = Sr2 & temp_path_block_signals[13] & Er0 & temp_path_block_signals[2] & Nr1 & temp_path_block_signals[9] & Pr3 & temp_path_block_signals[15]; //2 to 3 longer 2-0-1-3
+
+    //     Path_usage_bits_2[3] = Sr2 & temp_path_block_signals[13] & Pr0 & temp_path_block_signals[0]; //2 to 0 //vertical
+    //     Path_usage_bits_2[4] = Er2 & temp_path_block_signals[12] & Sr3 & temp_path_block_signals[18]  & Wr1 & temp_path_block_signals[6] & Pr0 & temp_path_block_signals[0]; //2 to 0 longer 2-3-1-0
+
+    //     Path_usage_bits_2[5] = Sr2 & temp_path_block_signals[13] & Er0 & temp_path_block_signals[2] & Pr1 & temp_path_block_signals[5]; //2 to 1 //diagonal (vertical) 2-0-1
+    //     Path_usage_bits_2[6] = Er2 & temp_path_block_signals[12] & Sr3 & temp_path_block_signals[18] & Pr1 & temp_path_block_signals[5];  //2 to 1 (flat) 2-3-1
+
+    // end
+    
+    // always @ (*) //router3
+    // begin
+    //     Path_usage_bits_3[0] = Pr3 & temp_path_block_signals[15]; // 3 to 3
+
+    //     Path_usage_bits_3[1] = Wr3 & temp_path_block_signals[16] & Pr2 & temp_path_block_signals[10]; //3 to 2 //flat
+    //     Path_usage_bits_3[2] = Sr3 & temp_path_block_signals[18] & Wr1 & temp_path_block_signals[6] & Nr0 & temp_path_block_signals[4] & Pr2 & temp_path_block_signals[10]; //3 to 2 longer 3-1-0-2
+
+    //     Path_usage_bits_3[3] = Sr3 & temp_path_block_signals[18] & Pr1 & temp_path_block_signals[5]; //3 to 1 //vertical
+    //     Path_usage_bits_3[4] = Wr3 & temp_path_block_signals[16] & Sr2 & temp_path_block_signals[13] & Er0 & temp_path_block_signals[2] & Pr1 & temp_path_block_signals[5]; //3 to 1 longer 3-2-0-1
+
+    //     Path_usage_bits_3[5] = Sr3 & temp_path_block_signals[18] & Wr1 & temp_path_block_signals[6] & Pr0 & temp_path_block_signals[0]; //3 to 0 //diagonal (vertical) 3-1-0
+    //     Path_usage_bits_3[6] = Wr3 & temp_path_block_signals[16] & Sr2 & temp_path_block_signals[13] & Pr0 & temp_path_block_signals[0];  //3 to 0 (flat) 3-2-0
+
+    // end
 
     assign Path_usage_bits = { Path_usage_bits_0, Path_usage_bits_1, Path_usage_bits_2, Path_usage_bits_3};
 endmodule
 
+
+    
 // Old khichri (no need to look here)
+
 // module main (
 // );
 // wire d01,d10,d12,d21,d34,d43,d45,d54,d67,d76,d78,d87,d03,d30,d36,d63,,d14,d41,d44,d74,d25,d52,d58,d85; // cross edges
