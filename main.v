@@ -27,7 +27,8 @@ module mesh(
     input [10:0]p1_configure,
     input [10:0]p2_configure,
     input [10:0]p3_configure,
-    output [3:0] processor_ready_signals
+    output [3:0] processor_ready_signals,
+    output [19:0] temp_path_block_signals
     );
     
     wire [8:0] d01,d10,d23,d32,d02,d20,d13,d31;
@@ -55,7 +56,7 @@ module mesh(
     wire [19:0] R1_control_signals;
     wire [19:0] R2_control_signals;
     wire [19:0] R3_control_signals;
-    wire [19:0] temp_path_block_signals;
+    // wire [19:0] temp_path_block_signals;
 //instantiation
     master m0(
         .clock(clock),
