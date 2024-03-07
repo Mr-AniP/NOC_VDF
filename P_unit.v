@@ -25,7 +25,8 @@ module Processing_unit(
     output reg[8:0] data_to_router,
     output reg request_transfer,
     output reg [1:0] which_processor,
-    output reg processor_ready,
+    // output reg processor_ready,
+    output processor_ready,
     input tb_request,
     input [1:0] tb_processor,
     input [7:0] tb_len
@@ -33,44 +34,59 @@ module Processing_unit(
     reg request_line;
     reg processor_ready1;
     reg [7:0]counter_value;
+    reg [7:0]counter_value1;
     reg tlast;
     reg tlast_prev;
-    reg tlast_prev_2;
+    // reg tlast_prev_2;
+    reg tlast1;
     always@(*)
     begin
         request_line=tb_request & processor_ready1;
+    end
+    always@(*)
+    begin
+        if(reset==1'b1)
+        begin
+            request_transfer<=1'b0;
+            which_processor<=2'b00;
+        end
+        else
+        begin
+            request_transfer<=request_line;
+            which_processor<=tb_processor;
+        end
     end
     always@(posedge clock or posedge reset)
     begin
         if(reset==1'b1)
         begin
             tlast_prev<=1'b0;
-            tlast_prev_2<=1'b0;
+            // tlast_prev_2<=1'b0;
         end
         else
         begin
             tlast_prev<=tlast;
-            tlast_prev_2<=tlast_prev;
+            // tlast_prev_2<=tlast_prev;
         end
     end
-    always@(posedge clock or posedge reset)
-    begin
-        if(reset==1'b1)
-        begin
-            request_transfer<=0;
-            which_processor<=2'b00;
-        end
-        else if(master_response==1'b0)
-        begin
-            request_transfer<=request_line;
-            which_processor<=tb_processor;
-        end
-        else
-        begin
-            request_transfer<=0;
-            which_processor<=2'b00;
-        end
-    end
+    // always@(posedge clock or posedge reset)
+    // begin
+    //     if(reset==1'b1)
+    //     begin
+    //         request_transfer<=0;
+    //         which_processor<=2'b00;
+    //     end
+    //     else if(master_response==1'b0)
+    //     begin
+    //         request_transfer<=request_line;
+    //         which_processor<=tb_processor;
+    //     end
+    //     else
+    //     begin
+    //         request_transfer<=0;
+    //         which_processor<=2'b00;
+    //     end
+    // end
     always@(*)
     begin
         if(reset==1'b1)
@@ -81,7 +97,8 @@ module Processing_unit(
         begin
             processor_ready1=1'b0;
         end
-        else if(tlast_prev_2==1'b1)
+        // else if(tlast_prev_2==1'b1)
+        else if(tlast_prev==1'b1)
         begin
             processor_ready1=1'b1;
         end
@@ -90,30 +107,53 @@ module Processing_unit(
             processor_ready1=processor_ready1;
         end
     end
-    always@(posedge clock or posedge reset)
-    begin
-        if (reset==1'b1)
-        begin
-            processor_ready<=1;
-        end
-        else
-        begin
-            processor_ready<=processor_ready1;
-        end
-    end
+    assign processor_ready=processor_ready1;
+    // always@(posedge clock or posedge reset)
+    // begin
+    //     if (reset==1'b1)
+    //     begin
+    //         processor_ready<=1;
+    //     end
+    //     else
+    //     begin
+    //         processor_ready<=processor_ready1;
+    //     end
+    // end
     always@(*)
     begin
         if(reset==1'b1)
         begin
-            tlast=1'b0;
+            tlast1=1'b0;
         end
-        else if(counter_value==tb_len)
+        else if(counter_value1==tb_len)
         begin
-            tlast=1'b1;
+            tlast1=1'b1;
         end
         else
         begin
-            tlast=0;
+            tlast1=1'b0;
+        end
+    end
+    always@(posedge clock or posedge reset)
+    begin
+        if(reset==1'b1)
+        begin
+            tlast<=1'b0;
+        end
+        else
+        begin
+            tlast<=tlast1;
+        end
+    end
+    always@(*)
+    begin
+        if(request_line==1 || counter_value==8'b11111111)
+        begin
+            counter_value1=8'b00000001;
+        end
+        else
+        begin
+            counter_value1=counter_value+1;
         end
     end
     always@(posedge clock or posedge reset) //next packet
@@ -122,17 +162,9 @@ module Processing_unit(
         begin
             counter_value<=8'b00000001;
         end
-        else if(request_line==1)
-        begin
-            counter_value<=8'b00000001;
-        end
-        else if(counter_value==8'b11111111)
-        begin
-            counter_value<=8'b00000001;
-        end
         else
         begin
-            counter_value<=counter_value+1;
+            counter_value<=counter_value1;
         end
     end
     always@(posedge clock or posedge reset)
