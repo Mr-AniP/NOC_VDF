@@ -23,14 +23,14 @@ module Processing_unit(
     input master_response,
     input [8:0] data_from_router,
     output reg[8:0] data_to_router,
-    output request_transfer,
-    output [1:0] which_processor;
+    output reg request_transfer,
+    output reg [1:0] which_processor,
     output processor_ready,
     input tb_request,
     input [1:0] tb_processor,
-    input [7:0] tb_len;
+    input [7:0] tb_len
 );
-    wire request_line;
+    reg request_line;
     reg processor_ready1;
     reg [7:0]counter_value;
     reg tlast;
@@ -51,9 +51,13 @@ module Processing_unit(
             which_processor<=tb_processor;
         end
     end
-    always@(posedge clock)
+    always@(posedge clock or posedge reset)
     begin
-        if(master_response==1'b1)
+        if (reset==1'b1)
+        begin
+            processor_ready1<=1;
+        end
+        else if(master_response==1'b1)
         begin
             processor_ready1<=0;
         end
