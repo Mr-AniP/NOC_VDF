@@ -3,18 +3,22 @@ Module Pin Description :
     Clock: 1 bit input port for the clock signal.
     Path_free_bits: Indicates the usage of all 28 paths available in the 2x2 NOC mesh.
     Router_control_signals: (for all R0 to R3)
-        3 bits each for selecting lines -> (In order North, South, East, West, Processor) i.e 3x5
-        1 bit each for setting the ready regs (In order North, South, East, West, Processor) i.e 1x5
+        3 bits each for selecting lines of a router -> (In order North, South, East, West, Processor) i.e 3x5
+        1 bit each for setting the ready regs of a router  (In order North, South, East, West, Processor) i.e 1x5
     Processor_signals: (for all P0 to P3)
         2 bit to indicate to which processor is transaction requested
         1 bit each for requesting transfer
     response_signals: 4 bit signal where each bit indicates the response from the master to the processors (in order P3 to P0)
+    temp_path_block_signals:
+        1 bit each for setting the ready regs of a router  (In order North, South, East, West, Processor) i.e 1x5 
+        and where 1 indicates the path is blocked
+        (in order R0 to R3)
     */
 
 module master(
     input clock,
     input reset,
-    input [27:0] Path_free_bits,
+    input [27:0] path_free_bits,
     input [2:0] P0_signals,
     input [2:0] P1_signals,
     input [2:0] P2_signals,
@@ -23,108 +27,30 @@ module master(
     output reg [19:0] R1_control_signals,
     output reg [19:0] R2_control_signals,
     output reg [19:0] R3_control_signals,
-    output reg [3:0] response_signals; 
+    output reg [3:0] response_signals,
+    output [19:0] temp_path_block_signals 
 );
     reg [19:0] R0_control_signals1, R1_control_signals1, R2_control_signals1, R3_control_signals1;
     reg [3:0] response_signals1;
-    
-    always@(posedge R0_control_signals1[4])
-    begin
-            R0_control_signals[4] <= 1'b1;
-    end
-    always@(posedge R1_control_signals1[4])
-    begin
-            R1_control_signals[4] <= 1'b1;
-    end
-    always@(posedge R2_control_signals1[4])
-    begin
-            R2_control_signals[4] <= 1'b1;
-    end
-    always@(posedge R3_control_signals1[4])
-    begin
-            R3_control_signals[4] <= 1'b1;
-    end
-    always@(posedge R0_control_signals1[3])
-    begin
-            R0_control_signals[3] <= 1'b1;
-    end
-    always@(posedge R1_control_signals1[3])
-    begin
-            R1_control_signals[3] <= 1'b1;
-    end
-    always@(posedge R2_control_signals1[3])
-    begin
-            R2_control_signals[3] <= 1'b1;
-    end
-    always@(posedge R3_control_signals1[3])
-    begin
-            R3_control_signals[3] <= 1'b1;
-    end
-    always@(posedge R0_control_signals1[2])
-    begin
-            R0_control_signals[2] <= 1'b1;
-    end
-    always@(posedge R1_control_signals1[2])
-    begin
-            R1_control_signals[2] <= 1'b1;
-    end
-    always@(posedge R2_control_signals1[2])
-    begin
-            R2_control_signals[2] <= 1'b1;
-    end
-    always@(posedge R3_control_signals1[2])
-    begin
-            R3_control_signals[2] <= 1'b1;
-    end
-    always@(posedge R0_control_signals1[1])
-    begin
-            R0_control_signals[1] <= 1'b1;
-    end
-    always@(posedge R1_control_signals1[1])
-    begin
-            R1_control_signals[1] <= 1'b1;
-    end
-    always@(posedge R2_control_signals1[1])
-    begin
-            R2_control_signals[1] <= 1'b1;
-    end
-    always@(posedge R3_control_signals1[1])
-    begin
-            R3_control_signals[1] <= 1'b1;
-    end
-    always@(posedge R0_control_signals1[0])
-    begin
-            R0_control_signals[0] <= 1'b1;
-    end
-    always@(posedge R1_control_signals1[0])
-    begin
-            R1_control_signals[0] <= 1'b1;
-    end
-    always@(posedge R2_control_signals1[0])
-    begin
-            R2_control_signals[0] <= 1'b1;
-    end
-    always@(posedge R3_control_signals1[0])
-    begin
-            R3_control_signals[0] <= 1'b1;
-    end
 
+//Preliminary conditions for reset and and evry posedge
     always@(posedge clock or posedge reset)
     begin
-        if(reset==1'b1)
+        if(reset==1'b1) //At reset data does not need to go to anywhere, so all destinadirections of router are free
         begin
-            R0_control_signals[19:5] <= 15'b0;
-            R1_control_signals[19:5] <= 15'b0;
-            R2_control_signals[19:5] <= 15'b0;
-            R3_control_signals[19:5] <= 15'b0;
-            response_signals <= 4'b0;
+            R0_control_signals <= 20'b0;
+            R1_control_signals <= 20'b0;
+            R2_control_signals <= 20'b0;
+            R3_control_signals <= 20'b0;
+            response_signals <= 4'b0; //Master is saying free all paths
         end
-        else
+
+        else //assign destination for every direction of a router
         begin
-            R0_control_signals[19:5]  <= R0_control_signals1[19:5] ;
-            R1_control_signals[19:5]  <= R1_control_signals1[19:5] ;
-            R2_control_signals[19:5]  <= R2_control_signals1[19:5] ;
-            R3_control_signals[19:5]  <= R3_control_signals1[19:5] ;
+            R0_control_signals  <= R0_control_signals1 ;
+            R1_control_signals  <= R1_control_signals1 ;
+            R2_control_signals  <= R2_control_signals1 ;
+            R3_control_signals  <= R3_control_signals1 ;
             response_signals <= response_signals1;
         end
     end
@@ -132,10 +58,10 @@ module master(
     begin
         if(reset==1'b1)
         begin
-            R0_control_signals1 = {15'b0,5'b11111};
-            R1_control_signals1 = {15'b0,5'b11111};
-            R2_control_signals1 = {15'b0,5'b11111};
-            R3_control_signals1 = {15'b0,5'b11111};
+            R0_control_signals1 = {15'b0,5'b0};
+            R1_control_signals1 = {15'b0,5'b0};
+            R2_control_signals1 = {15'b0,5'b0};
+            R3_control_signals1 = {15'b0,5'b0};
             response_signals1 = 4'b0;
         end
         else
@@ -483,4 +409,106 @@ module master(
             end
         end
     end
+
+    //  Passing path blocking signals for further computation to mesh
+    assign temp_path_block_signals = ~{R3_control_signals1[4:0],R2_control_signals1[4:0],R1_control_signals1[4:0],R0_control_signals1[4:0]}; 
 endmodule
+
+// End of the module
+
+// Animesh ki kichri
+
+    // //For router, if control_signals1 north is high, synchronously update value for north of control_signal
+    // always@(posedge R0_control_signals1[4]) 
+    // begin
+    //         R0_control_signals[4] <= 1'b1;
+    // end
+    // always@(posedge R1_control_signals1[4])
+    // begin
+    //         R1_control_signals[4] <= 1'b1;
+    // end
+    // always@(posedge R2_control_signals1[4])
+    // begin
+    //         R2_control_signals[4] <= 1'b1;
+    // end
+    // always@(posedge R3_control_signals1[4])
+    // begin
+    //         R3_control_signals[4] <= 1'b1;
+    // end
+
+    // // For router, if control_signals1 south is high, synchronously update value for south of control_signal
+
+    // always@(posedge R0_control_signals1[3])
+    // begin
+    //         R0_control_signals[3] <= 1'b1;
+    // end
+    // always@(posedge R1_control_signals1[3])
+    // begin
+    //         R1_control_signals[3] <= 1'b1;
+    // end
+    // always@(posedge R2_control_signals1[3])
+    // begin
+    //         R2_control_signals[3] <= 1'b1;
+    // end
+    // always@(posedge R3_control_signals1[3])
+    // begin
+    //         R3_control_signals[3] <= 1'b1;
+    // end
+
+    // // For router, if control_signals1 east is high, synchronously update value for east of control_signal
+
+    // always@(posedge R0_control_signals1[2])
+    // begin
+    //         R0_control_signals[2] <= 1'b1;
+    // end
+    // always@(posedge R1_control_signals1[2])
+    // begin
+    //         R1_control_signals[2] <= 1'b1;
+    // end
+    // always@(posedge R2_control_signals1[2])
+    // begin
+    //         R2_control_signals[2] <= 1'b1;
+    // end
+    // always@(posedge R3_control_signals1[2])
+    // begin
+    //         R3_control_signals[2] <= 1'b1;
+    // end
+
+    // //For router, if control_signals1 west is high, synchronously update value for west of control_signal
+
+    // always@(posedge R0_control_signals1[1])
+    // begin
+    //         R0_control_signals[1] <= 1'b1;
+    // end
+    // always@(posedge R1_control_signals1[1])
+    // begin
+    //         R1_control_signals[1] <= 1'b1;
+    // end
+    // always@(posedge R2_control_signals1[1])
+    // begin
+    //         R2_control_signals[1] <= 1'b1;
+    // end
+    // always@(posedge R3_control_signals1[1])
+    // begin
+    //         R3_control_signals[1] <= 1'b1;
+    // end
+
+    // // For router, if control_signals1 processor is high, synchronously update value for processor of control_signal
+
+    // always@(posedge R0_control_signals1[0])
+    // begin
+    //         R0_control_signals[0] <= 1'b1;
+    // end
+    // always@(posedge R1_control_signals1[0])
+    // begin
+    //         R1_control_signals[0] <= 1'b1;
+    // end
+    // always@(posedge R2_control_signals1[0])
+    // begin
+    //         R2_control_signals[0] <= 1'b1;
+    // end
+    // always@(posedge R3_control_signals1[0])
+    // begin
+    //         R3_control_signals[0] <= 1'b1;
+    // end
+// End of the file
