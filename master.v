@@ -157,7 +157,7 @@ module master(
                     end
                 endcase
             end            
-            if(P1_signals[0]==1'b1)
+            else if(P1_signals[0]==1'b1)
             begin
                 case(P1_signals[2:1])
                     2'b00:
@@ -240,7 +240,7 @@ module master(
                     end
                 endcase
             end
-            if(P2_signals[0]==1'b1)
+            else if(P2_signals[0]==1'b1)
             begin
                 case(P2_signals[2:1])
                     2'b00:
@@ -324,7 +324,7 @@ module master(
                     end
                 endcase
             end
-            if(P3_signals[0]==1'b1)
+            else if(P3_signals[0]==1'b1)
             begin
                 case(P3_signals[2:1])
                     2'b00:
