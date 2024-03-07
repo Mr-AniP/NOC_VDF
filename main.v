@@ -245,7 +245,7 @@ module mesh(
         .SetPR(R3_control_signals[0])
     );
 
-    always @ (posedge clock) //router 0
+    always @ (*) //router 0
     begin
         Path_usage_bits_0[0] = Pr0 ; //0 to 0
         
