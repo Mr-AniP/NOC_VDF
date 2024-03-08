@@ -1,7 +1,7 @@
 /*
 Module Pin Description :
     Clock: 1 bit input port for the clock signal.
-    Path_free_bits: Indicates the usage of all 28 paths available in the 2x2 NOC mesh.
+    Path_free_bits: Indicates the usage of all 28 ((24 cross paths + 4 self paths )) paths available in the 2x2 NOC mesh.
     Router_control_signals: (for all R0 to R3)
         3 bits each for selecting lines of a router -> (In order North, South, East, West, Processor) i.e 3x5
         1 bit each for setting the ready regs of a router  (In order North, South, East, West, Processor) i.e 1x5
