@@ -231,7 +231,7 @@ module router (
         end
         else
         begin
-            regNR<=regNR;
+            regNR<=regNR1;
         end
     end
     always@(posedge clock or posedge reset)
