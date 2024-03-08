@@ -12,7 +12,7 @@ Module Pin Description :
     SetNR: 1 bit input port to set the North side port ready reg by master.
     SetSR: 1 bit input port to set the South side port ready reg by master.
     SetER: 1 bit input port to set the East side port ready reg by master.
-    SetWR: 1 bit input port to set the West side port ready reg .
+    SetWR: 1 bit input port to set the West side port ready reg by master
     SetPR: 1 bit input port to set the Processor side port ready reg by master.
     Select North: 3 bit input port to select the data for North side port.
     Select South: 3 bit input port to select the data for South side port.
