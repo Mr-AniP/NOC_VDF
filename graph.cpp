@@ -1,4 +1,4 @@
-//This is testing code used to generate all possible paths between any 2 nodes
+//This is a testing code used to generate all possible paths between any 2 nodes
 
 #include <iostream>
 #include<bits/stdc++.h>
