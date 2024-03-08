@@ -69,7 +69,7 @@ module master(
         end
 
         else
-        begin //initially all 0, therafter keep the selctlines part as previous
+        begin //initially all 0, therafter keep the selctlines part as previous (values are changed for those needed using case)
             R0_control_signals1 = {R0_control_signals1[19:5],5'b0};
             R1_control_signals1 = {R1_control_signals1[19:5],5'b0};
             R2_control_signals1 = {R2_control_signals1[19:5],5'b0};
@@ -82,8 +82,8 @@ module master(
                     begin
                         if(path_free_bits[0]==1'b1 && R0_control_signals1[0]==1'b0) 
                         begin
-                            R0_control_signals1[7:5] =3'b100;
-                            R0_control_signals1[0] = 1'b1;
+                            R0_control_signals1[7:5] =3'b100; //R0 from processor to processor
+                            R0_control_signals1[0] = 1'b1; //processor is active
                             response_signals1[0] = 1'b1;
                         end
                     end
@@ -91,22 +91,22 @@ module master(
                     begin
                         if(path_free_bits[1]==1'b1 && R0_control_signals1[2]==1'b0 && R1_control_signals1[0]==1'b0)
                         begin //direct
-                            R0_control_signals1[13:11] =3'b100;
-                            R0_control_signals1[2] = 1'b1;
-                            R1_control_signals1[7:5]=3'b011;
-                            R1_control_signals1[0] = 1'b1;
+                            R0_control_signals1[13:11] =3'b100; //from processor data goes to east edge of R0
+                            R0_control_signals1[2] = 1'b1;// east is active
+                            R1_control_signals1[7:5]=3'b011;//from west of R1 to its processor
+                            R1_control_signals1[0] = 1'b1;//processor is active
                             response_signals1[0] = 1'b1;
                         end
                         else if(path_free_bits[2]==1'b1 && R0_control_signals1[4]==1'b0 && R2_control_signals1[2]==1'b0 && R3_control_signals1[3]==1'b0 && R1_control_signals1[0]==1'b0)
-                        begin//indirect
-                            R0_control_signals1[19:17] =3'b100;
-                            R0_control_signals1[4] = 1'b1;
-                            R2_control_signals1[13:11]=3'b001;
-                            R2_control_signals1[2] = 1'b1;
-                            R3_control_signals1[16:14]=3'b011;
-                            R3_control_signals1[3]=1'b1;
-                            R1_control_signals1[7:5]=3'b000;
-                            R1_control_signals1[0] = 1'b1;
+                        begin//indirect 0-2-3-1
+                            R0_control_signals1[19:17] =3'b100;//from processor to north edge of R0
+                            R0_control_signals1[4] = 1'b1;//north is active
+                            R2_control_signals1[13:11]=3'b001;//from south edge of R2 to east 
+                            R2_control_signals1[2] = 1'b1;//east is active
+                            R3_control_signals1[16:14]=3'b011;//from west of R3 to its south
+                            R3_control_signals1[3]=1'b1;//south is active
+                            R1_control_signals1[7:5]=3'b000;//from north of R1 to its processor
+                            R1_control_signals1[0] = 1'b1; //processor is active
                             response_signals1[0] = 1'b1;
                         end
                     end
@@ -122,7 +122,7 @@ module master(
                         end
                         
                         else if (path_free_bits[4]==1'b1 && R0_control_signals1[2]==1'b0 && R1_control_signals1[4]==1'b0 && R3_control_signals1[1]==1'b0 && R2_control_signals1[0]==1'b0)
-                        begin//indirect
+                        begin//indirect 0-1-3-2
                             
                             R0_control_signals1[13:11] =3'b100; //from processor to east edge
                             R0_control_signals1[2] = 1'b1; //east edge is active
@@ -140,22 +140,22 @@ module master(
                     begin
                         if(path_free_bits[5]==1'b1 && R0_control_signals1[4]==1'b0 && R2_control_signals1[2]==1'b0 && R3_control_signals1[0]==1'b0)
                         begin//0-2-3
-                            R0_control_signals1[19:17] =3'b100;
-                            R0_control_signals1[4] = 1'b1;
-                            R2_control_signals1[13:11]=3'b001;
-                            R2_control_signals1[2] = 1'b1;
-                            R3_control_signals1[7:5]=3'b011;
-                            R3_control_signals1[0]=1'b1;
+                            R0_control_signals1[19:17] =3'b100;//from processor to north
+                            R0_control_signals1[4] = 1'b1;//north is ready
+                            R2_control_signals1[13:11]=3'b001;//from south to east of R2
+                            R2_control_signals1[2] = 1'b1;//east is active
+                            R3_control_signals1[7:5]=3'b011;//from west to processor
+                            R3_control_signals1[0]=1'b1;//processor is active
                             response_signals1[0] = 1'b1;
                         end
                         else if(path_free_bits[6]==1'b1 && R0_control_signals1[2]==1'b0 && R1_control_signals1[4]==1'b0 && R3_control_signals1[0]==1'b0)
                         begin//0-1-3
-                            R0_control_signals1[13:11] =3'b100;
-                            R0_control_signals1[2] = 1'b1;
-                            R1_control_signals1[19:17]=3'b011;
-                            R1_control_signals1[4] = 1'b1;
-                            R3_control_signals1[7:5]=3'b001;
-                            R3_control_signals1[0]=1'b1;
+                            R0_control_signals1[13:11] =3'b100;//from processor to east
+                            R0_control_signals1[2] = 1'b1;//east is active
+                            R1_control_signals1[19:17]=3'b011;//from west of R1 to north
+                            R1_control_signals1[4] = 1'b1;//north is active
+                            R3_control_signals1[7:5]=3'b001;//from south of R3 to processor
+                            R3_control_signals1[0]=1'b1;//processor is active
                             response_signals1[0] = 1'b1;
                         end
                     end
@@ -192,8 +192,8 @@ module master(
                     begin
                         if(path_free_bits[7]==1'b1 && R1_control_signals1[0]==1'b0 )
                         begin
-                            R1_control_signals1[7:5] =3'b100;
-                            R1_control_signals1[0] = 1'b1;
+                            R1_control_signals1[7:5] =3'b100; //R1 from processor to processor
+                            R1_control_signals1[0] = 1'b1; //processor is active
                             response_signals1[1] = 1'b1;
                         end
                     end
@@ -300,8 +300,8 @@ module master(
                     begin
                         if(path_free_bits[14]==1'b1 && R2_control_signals1[0]==1'b0)
                         begin
-                            R2_control_signals1[7:5] =3'b100;
-                            R2_control_signals1[0] = 1'b1;
+                            R2_control_signals1[7:5] =3'b100; //R2 from processor to processor
+                            R2_control_signals1[0] = 1'b1; //processor is active
                             response_signals1[2] = 1'b1;
                         end
                     end
