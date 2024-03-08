@@ -19,16 +19,16 @@ Module Pin Description :
     Select East: 3 bit input port to select the data for East side port.
     Select West: 3 bit input port to select the data for West side port.
     Select Processor: 3 bit input port to select the data for Processor side port.
-    Data North: 9 bit input port for the data from the North side port.
-    Data South: 9 bit input port for the data from the South side port.
-    Data East: 9 bit input port for the data from the East side port.
-    Data West: 9 bit input port for the data from the West side port.
-    Data Processor: 9 bit input port for the data from the Processor side port.
-    Output North: 9 bit output port for the data to the North side port.
-    Output South: 9 bit output port for the data to the South side port.
-    Output East: 9 bit output port for the data to the East side port.
-    Output West: 9 bit output port for the data to the West side port.
-    Output Processor: 9 bit output port for the data to the Processor side port.
+    Data North: 9 bit input port for the data from the North side port. [8] ->last flit
+    Data South: 9 bit input port for the data from the South side port. [8] ->last flit
+    Data East: 9 bit input port for the data from the East side port. [8] ->last flit
+    Data West: 9 bit input port for the data from the West side port. [8] ->last flit
+    Data Processor: 9 bit input port for the data from the Processor side port. [8] ->last flit
+    Output North: 9 bit output port for the data to the North side port. [8] ->last flit
+    Output South: 9 bit output port for the data to the South side port. [8] ->last flit
+    Output East: 9 bit output port for the data to the East side port. [8] ->last flit
+    Output West: 9 bit output port for the data to the West side port. [8] ->last flit
+    Output Processor: 9 bit output port for the data to the Processor side port. [8] ->last flit
     North Ready: 1 bit output port to indicate the availability of the North side port line.
     South Ready: 1 bit output port to indicate the availability of the South side port line.
     East Ready: 1 bit output port to indicate the availability of the East side port line.
@@ -71,15 +71,23 @@ module router (
     input SetWR,
     input SetPR
     );
+
 // internal working
-    reg [8:0] output_north1,output_south1,output_east1,output_west1,output_processor1;
+
+// temporary variables of output used till clockedge is not reached
+    reg [8:0] output_north1,output_south1,output_east1,output_west1,output_processor1; 
+
+// check whether route is free or not
     reg regNR,regSR,regER,regWR,regPR;
+
+//temporary variable used till clockedge is not reached
     reg regNR1,regSR1,regER1,regWR1,regPR1;
+
     // Data Packet Routing (Crossbar Working)
-    
+
     always@(*)
     begin 
-        case(select_north) //choosing which input of router will go 
+        case(select_north) //choosing which input of router will go as output on north, essentially a multiplexer
             3'b000: output_north1 = data_north;
             3'b001: output_north1 = data_south;
             3'b010: output_north1 = data_east;
@@ -90,9 +98,10 @@ module router (
             3'b111: output_north1 = 9'b00000000;
         endcase
     end
+
     always@(*)
     begin
-        case(select_south)
+        case(select_south) //choosing which input of router will go as output on south, essentially a multiplexer
             3'b000: output_south1 = data_north;
             3'b001: output_south1 = data_south;
             3'b010: output_south1 = data_east;
@@ -103,9 +112,10 @@ module router (
             3'b111: output_south1 = 9'b00000000;
         endcase
     end
+
     always@(*)
     begin
-        case(select_east)
+        case(select_east) //choosing which input of router will go as output on east, essentially a multiplexer
             3'b000: output_east1 = data_north;
             3'b001: output_east1 = data_south;
             3'b010: output_east1 = data_east;
@@ -116,9 +126,10 @@ module router (
             3'b111: output_east1 = 9'b00000000;
         endcase
     end
+
     always@(*)
     begin
-        case(select_west)
+        case(select_west) //choosing which input of router will go as output on west, essentially a multiplexer
             3'b000: output_west1 = data_north;
             3'b001: output_west1 = data_south;
             3'b010: output_west1 = data_east;
@@ -129,9 +140,10 @@ module router (
             3'b111: output_west1 = 9'b00000000;
         endcase
     end
+
     always@(*)
     begin
-        case(select_processor)
+        case(select_processor) //choosing which input of router will go as output on processor, essentially a multiplexer
             3'b000: output_processor1 = data_north;
             3'b001: output_processor1 = data_south;
             3'b010: output_processor1 = data_east;
@@ -142,147 +154,155 @@ module router (
             3'b111: output_processor1 = 9'b00000000;
         endcase
     end
+
     // Output Port Selection
     always@(*)
     begin
         if(output_north1[8]==1'b1)
         begin
-            regNR1<=1;
+            regNR1<=1; // If last bit of data packet, make route free
         end
         else if(SetNR==1'b1)
         begin
-            regNR1<=0;
+            regNR1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regNR1<=regNR;
+            regNR1<=regNR; //Else continue with the previous value
         end
     end
     always@(*)
     begin
         if(output_south1[8]==1'b1)
         begin
-            regSR1<=1;
+            regSR1<=1;// If last bit of data packet, make route free
         end
         else if(SetSR==1'b1)
         begin
-            regSR1<=0;
+            regSR1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regSR1<=regSR;
+            regSR1<=regSR; //Else continue with the previous value
         end
     end
     always@(*)
     begin
         if(output_east1[8]==1'b1)
         begin
-            regER1<=1;
+            regER1<=1;// If last bit of data packet, make route free
         end
         else if(SetER==1'b1)
         begin
-            regER1<=0;
+            regER1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regER1<=regER;
+            regER1<=regER; //Else continue with the previous value
         end
     end
     always@(*)
     begin
         if(output_west1[8]==1'b1)
         begin
-            regWR1<=1;
+            regWR1<=1;// If last bit of data packet, make route free
         end
         else if(SetWR==1'b1)
         begin
-            regWR1<=0;
+            regWR1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regWR1<=regWR;
+            regWR1<=regWR; //Else continue with the previous value
         end
     end
     always@(*)
     begin
         if(output_processor1[8]==1'b1)
         begin
-            regPR1<=1;
+            regPR1<=1;// If last bit of data packet, make route free
         end
         else if(SetPR==1'b1)
         begin
-            regPR1<=0;
+            regPR1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regPR1<=regPR;
+            regPR1<=regPR; //Else continue with the previous value
         end
     end
+
+    //assigning output at posedge of clock or reset
     always@(posedge clock or posedge reset)
     begin
-        output_north<=output_north1;
+        output_north<=output_north1; //assign output according to the output of MUX, at clock edge
         if(reset==1'b1)
         begin
-            regNR<=1;
+            regNR<=1; //if reset, all paths are made free
         end
-        else if(SetNR==1'b1)
+        else if(SetNR==1'b1) //Animesh bhai please check redundant hai
         begin
             regNR<=0;
         end
         else
         begin
-            regNR<=regNR1;
+            regNR<=regNR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
+
     always@(posedge clock or posedge reset)
     begin
-        output_south<=output_south1;
+        output_south<=output_south1; //assign output according to the output of MUX, at clock edge
         if(reset==1'b1)
         begin
-            regSR<=1;
+            regSR<=1; //if reset, all paths are made free
         end
         else
         begin
-            regSR<=regSR1;
+            regSR<=regSR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
+
     always@(posedge clock or posedge reset)
     begin
-        output_east<=output_east1;
+        output_east<=output_east1; //assign output according to the output of MUX, at clock edge
         if(reset==1'b1)
         begin
-            regER<=1;
+            regER<=1; //if reset, all paths are made free
         end
         else
         begin
-            regER<=regER1;
+            regER<=regER1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
+
     always@(posedge clock or posedge reset)
     begin
-        output_west<=output_west1;
+        output_west<=output_west1; //assign output according to the output of MUX done above, at clock edge
         if(reset==1'b1)
         begin
-            regWR<=1;
+            regWR<=1; //if reset, all paths are made free
         end
         else
         begin
-            regWR<=regWR1;
+            regWR<=regWR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
+
     always@(posedge clock or posedge reset)
     begin
-        output_processor<=output_processor1;
+        output_processor<=output_processor1; //assign output according to the output of MUX done above, at clock edge
         if(reset==1'b1)
         begin
-            regPR<=1;
+            regPR<=1;//if reset, all paths are made free
         end
         else
         begin
-            regPR<=regPR1;
+            regPR<=regPR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
-    // Assigning ussage bit
+
+    // Assigning ussage bit (freeness of paths found using regNR, regSR, regER, regWR, regPR)
     assign north_ready=regNR;
     assign south_ready=regSR;
     assign east_ready=regER;
