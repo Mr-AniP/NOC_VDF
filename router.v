@@ -231,28 +231,28 @@ module router (
             regPR1<=regPR; //Else continue with the previous value
         end
     end
-
     //assigning output at posedge of clock or reset
     always@(posedge clock or posedge reset)
     begin
         output_north<=output_north1; //assign output according to the output of MUX, at clock edge
+    end
+    always@(posedge clock or posedge reset)
+    begin
         if(reset==1'b1)
         begin
             regNR<=1; //if reset, all paths are made free
-        end
-        else if(SetNR==1'b1) //Animesh bhai please check redundant hai
-        begin
-            regNR<=0;
         end
         else
         begin
             regNR<=regNR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
-
     always@(posedge clock or posedge reset)
     begin
         output_south<=output_south1; //assign output according to the output of MUX, at clock edge
+    end
+    always@(posedge clock or posedge reset)
+    begin
         if(reset==1'b1)
         begin
             regSR<=1; //if reset, all paths are made free
@@ -262,10 +262,12 @@ module router (
             regSR<=regSR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
-
     always@(posedge clock or posedge reset)
     begin
         output_east<=output_east1; //assign output according to the output of MUX, at clock edge
+    end
+    always@(posedge clock or posedge reset)
+    begin
         if(reset==1'b1)
         begin
             regER<=1; //if reset, all paths are made free
@@ -275,10 +277,12 @@ module router (
             regER<=regER1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
-
     always@(posedge clock or posedge reset)
     begin
         output_west<=output_west1; //assign output according to the output of MUX done above, at clock edge
+    end
+    always@(posedge clock or posedge reset)
+    begin
         if(reset==1'b1)
         begin
             regWR<=1; //if reset, all paths are made free
@@ -288,10 +292,12 @@ module router (
             regWR<=regWR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
-
     always@(posedge clock or posedge reset)
     begin
         output_processor<=output_processor1; //assign output according to the output of MUX done above, at clock edge
+    end
+    always@(posedge clock or posedge reset)
+    begin
         if(reset==1'b1)
         begin
             regPR<=1;//if reset, all paths are made free
