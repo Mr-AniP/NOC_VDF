@@ -160,7 +160,7 @@ module Processing_unit(
     begin
         if(reset==1'b1)
         begin
-            data_to_router<=8'b0; //if it was a reset, send 0 as output
+            data_to_router<=9'b0; //if it was a reset, send 0 as output
         end
         else
         begin
