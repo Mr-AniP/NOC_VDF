@@ -232,7 +232,7 @@ module router (
         end
     end
     //assigning output at posedge of clock or reset
-    always@(posedge clock or posedge reset)
+    always@(posedge clock)
     begin
         output_north<=output_north1; //assign output according to the output of MUX, at clock edge
     end
@@ -247,7 +247,7 @@ module router (
             regNR<=regNR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
-    always@(posedge clock or posedge reset)
+    always@(posedge clock)
     begin
         output_south<=output_south1; //assign output according to the output of MUX, at clock edge
     end
@@ -262,7 +262,7 @@ module router (
             regSR<=regSR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
-    always@(posedge clock or posedge reset)
+    always@(posedge clock)
     begin
         output_east<=output_east1; //assign output according to the output of MUX, at clock edge
     end
@@ -277,7 +277,7 @@ module router (
             regER<=regER1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
-    always@(posedge clock or posedge reset)
+    always@(posedge clock)
     begin
         output_west<=output_west1; //assign output according to the output of MUX done above, at clock edge
     end
@@ -292,7 +292,7 @@ module router (
             regWR<=regWR1; //assign path freeness according to the algorithm done above, at clock edge
         end
     end
-    always@(posedge clock or posedge reset)
+    always@(posedge clock)
     begin
         output_processor<=output_processor1; //assign output according to the output of MUX done above, at clock edge
     end
