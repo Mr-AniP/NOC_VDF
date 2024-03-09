@@ -57,6 +57,7 @@ module mesh(
     wire [19:0] R2_control_signals;
     wire [19:0] R3_control_signals;
     // wire [19:0] temp_path_block_signals;
+    parameter NO_DATA=9'b000000000;
 //instantiation
     master m0(
         .clock(clock),
@@ -97,9 +98,9 @@ module mesh(
         .select_west(R0_control_signals[10:8]),
         .select_processor(R0_control_signals[7:5]),
         .data_north(d20),
-        .data_south(),
+        .data_south(NO_DATA),
         .data_east(d10),
-        .data_west(),
+        .data_west(NO_DATA),
         .data_processor(d00),
         .output_north(d02),
         .output_south(),
@@ -140,8 +141,8 @@ module mesh(
         .select_west(R1_control_signals[10:8]),
         .select_processor(R1_control_signals[7:5]),
         .data_north(d31),
-        .data_south(),
-        .data_east(),
+        .data_south(NO_DATA),
+        .data_east(NO_DATA),
         .data_west(d01),
         .data_processor(d11),
         .output_north(d13),
@@ -181,10 +182,10 @@ module mesh(
         .select_east(R2_control_signals[13:11]),
         .select_west(R2_control_signals[10:8]),
         .select_processor(R2_control_signals[7:5]),
-        .data_north(),
+        .data_north(NO_DATA),
         .data_south(d02),
         .data_east(d32),
-        .data_west(),
+        .data_west(NO_DATA),
         .data_processor(d22),
         .output_north(),
         .output_south(d20),
@@ -223,9 +224,9 @@ module mesh(
         .select_east(R3_control_signals[13:11]),
         .select_west(R3_control_signals[10:8]),
         .select_processor(R3_control_signals[7:5]),
-        .data_north(),
+        .data_north(NO_DATA),
         .data_south(d13),
-        .data_east(),
+        .data_east(NO_DATA),
         .data_west(d23),
         .data_processor(d33),
         .output_north(),
