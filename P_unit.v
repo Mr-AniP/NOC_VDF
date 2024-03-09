@@ -98,10 +98,6 @@ module Processing_unit(
         begin
             processor_ready1=1'b1; //if the last packet of data is sent, now processor is again free
         end
-        else
-        begin
-            processor_ready1=processor_ready1; // else continue with the same value
-        end
     end
 
     //set the values of processor_ready
