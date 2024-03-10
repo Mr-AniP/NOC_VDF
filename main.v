@@ -17,7 +17,7 @@ Pin Description:
 */
 
 `include"router.v"
-`include"master.v"
+`include"Master_new.v"
 `include"P_unit.v"
 
 module mesh(
@@ -27,10 +27,24 @@ module mesh(
     input [10:0]p1_configure,
     input [10:0]p2_configure,
     input [10:0]p3_configure,
-    output [3:0] processor_ready_signals,
-    output [19:0] temp_path_block_signals
+    output reg [3:0] processor_ready_signals,
+    output reg [19:0] temp_path_block_signals
     );
-    
+    reg [10:0] p0_configure1,p1_configure1,p2_configure1,p3_configure1;
+    wire [3:0] processor_ready_signals1;
+    wire [19:0] temp_path_block_signals1;
+    always@(posedge clock)
+    begin
+        processor_ready_signals <= processor_ready_signals1;
+        temp_path_block_signals <= temp_path_block_signals1;
+    end
+    always@(posedge clock)
+    begin
+        p0_configure1 <= p0_configure;
+        p1_configure1 <= p1_configure;
+        p2_configure1 <= p2_configure;
+        p3_configure1 <= p3_configure;
+    end
     wire [8:0] d01,d10,d23,d32,d02,d20,d13,d31;
     wire [8:0] d00,d11,d22,d33;
     wire [8:0] r00,r11,r22,r33;
@@ -72,7 +86,7 @@ module mesh(
         .R2_control_signals(R2_control_signals),
         .R3_control_signals(R3_control_signals),
         .response_signals(response_signals),
-        .temp_path_block_signals(temp_path_block_signals)
+        .temp_path_block_signals(temp_path_block_signals1)
     );
     
     Processing_unit p0(
@@ -83,10 +97,10 @@ module mesh(
             .data_to_router(d00),
             .request_transfer(P0_signals[1]),
             .which_processor(P0_signals[3:2]),
-            .processor_ready(processor_ready_signals[0]),
-            .tb_request(p0_configure[0]),
-            .tb_processor(p0_configure[2:1]),
-            .tb_len(p0_configure[10:3])
+            .processor_ready(processor_ready_signals1[0]),
+            .tb_request(p0_configure1[0]),
+            .tb_processor(p0_configure1[2:1]),
+            .tb_len(p0_configure1[10:3])
     );
 //Set commands by master
     router r0(
@@ -127,10 +141,10 @@ module mesh(
             .data_to_router(d11),
             .request_transfer(P1_signals[1]),
             .which_processor(P1_signals[3:2]),
-            .processor_ready(processor_ready_signals[1]),
-            .tb_request(p1_configure[0]),
-            .tb_processor(p1_configure[2:1]),
-            .tb_len(p1_configure[10:3])
+            .processor_ready(processor_ready_signals1[1]),
+            .tb_request(p1_configure1[0]),
+            .tb_processor(p1_configure1[2:1]),
+            .tb_len(p1_configure1[10:3])
     );
     router r1(
         .clock(clock),
@@ -169,10 +183,10 @@ module mesh(
             .data_to_router(d22),
             .request_transfer(P2_signals[1]),
             .which_processor(P2_signals[3:2]),
-            .processor_ready(processor_ready_signals[2]),
-            .tb_request(p2_configure[0]),
-            .tb_processor(p2_configure[2:1]),
-            .tb_len(p2_configure[10:3])
+            .processor_ready(processor_ready_signals1[2]),
+            .tb_request(p2_configure1[0]),
+            .tb_processor(p2_configure1[2:1]),
+            .tb_len(p2_configure1[10:3])
     );
     router r2(
         .clock(clock),
@@ -211,10 +225,10 @@ module mesh(
             .data_to_router(d33),
             .request_transfer(P3_signals[1]),
             .which_processor(P3_signals[3:2]),
-            .processor_ready(processor_ready_signals[3]),
-            .tb_request(p3_configure[0]),
-            .tb_processor(p3_configure[2:1]),
-            .tb_len(p3_configure[10:3])
+            .processor_ready(processor_ready_signals1[3]),
+            .tb_request(p3_configure1[0]),
+            .tb_processor(p3_configure1[2:1]),
+            .tb_len(p3_configure1[10:3])
     );
     router r3(
         .clock(clock),
