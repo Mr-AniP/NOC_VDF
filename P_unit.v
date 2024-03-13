@@ -22,14 +22,30 @@ module Processing_unit(
     input reset,
     input master_response,
     input [8:0] data_from_router,
-    output reg[8:0] data_to_router,
-    output reg request_transfer,
-    output reg [1:0] which_processor,
+    output [8:0] data_to_router,
+    output request_transfer,
+    output [1:0] which_processor,
     output processor_ready,
+    output [8:0] data_got,
     input tb_request,
     input [1:0] tb_processor,
     input [7:0] tb_len
 );
+    reg [8:0] data_got1, data_to_router1;
+    reg [1:0] which_processor1;
+    reg request_transfer1;
+    assign data_got=data_got1;
+    assign which_processor=which_processor1;
+    assign data_to_router=data_to_router1;
+    assign request_transfer=request_transfer1;
+
+    always@(posedge clock)
+    begin
+        begin
+            data_got1<=data_from_router; //assign tlast which checks whether last element or not 
+            //tlast_prev is assigned 1 clock cycle after tlast is evaluated and assigned
+        end
+    end
 
 //variables
 
@@ -61,13 +77,23 @@ module Processing_unit(
     begin
         if(reset==1'b1)
         begin
-            request_transfer<=1'b0; //if reset all requests are null and void
-            which_processor<=2'b00; //set destination processor to default
+            which_processor1=2'b00; //set destination processor to default
         end
         else
         begin
-            request_transfer<=request_line; //else raise request_transfer if a valid request 
-            which_processor<=tb_processor; //and set which_processor according to the destination the user has set 
+            which_processor1=tb_processor; //and set which_processor according to the destination the user has set 
+        end
+    end
+
+    always@(*)
+    begin
+        if(reset==1'b1)
+        begin
+            request_transfer1=1'b0; //if reset all requests are null and void
+        end
+        else
+        begin
+            request_transfer1=request_line; //else raise request_transfer if a valid request  
         end
     end
 
@@ -84,19 +110,24 @@ module Processing_unit(
         end
     end
 
+    reg processor_ready2;
     always@(*)
     begin
-        if(reset==1'b1)
+        if(master_response==1'b1)
         begin
-            processor_ready1=1'b1; //if reset, evidently processor is free to transmit
+            processor_ready2=1'b0; //if master commands to utilise processor, it is no more free to transmit
         end
-        else if(master_response==1'b1)
+        else
         begin
-            processor_ready1=1'b0; //if master commands to utilise processor, it is no more free to transmit
+            processor_ready2=1'b1;
         end
-        else if(tlast_prev==1'b1)
+    end
+
+    always@(*)
+    begin
+        if(reset || tlast_prev || master_response)
         begin
-            processor_ready1=1'b1; //if the last packet of data is sent, now processor is again free
+            processor_ready1<=processor_ready2;
         end
     end
 
@@ -160,11 +191,11 @@ module Processing_unit(
     begin
         if(reset==1'b1)
         begin
-            data_to_router<=9'b0; //if it was a reset, send 0 as output
+            data_to_router1<=9'b0; //if it was a reset, send 0 as output
         end
         else
         begin
-            data_to_router<={tlast,counter_value[7:0]}; //else concatenate the last flit with counter value
+            data_to_router1<={tlast,counter_value[7:0]}; //else concatenate the last flit with counter value
         end
     end
 
