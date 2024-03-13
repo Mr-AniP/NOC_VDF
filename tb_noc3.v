@@ -8,7 +8,7 @@ module tb_noc();
     // wire [19:0] temp_path_block_signals;
     wire [8:0] p0_recieve_data,p1_recieve_data,p2_recieve_data,p3_recieve_data;
     reg block_all_paths;
-    parameter No_DATA 18'b0;
+    parameter No_DATA=18'b0;
     mesh m1 (.clock(clk), 
             .reset(reset),
             .r0_input(No_DATA),
