@@ -17,7 +17,8 @@ Pin Description:
 */
 
 `include"router.v"
-`include"Master_new.v"
+//`include"Master_new.v"
+`include"master.v"
 `include"P_unit.v"
 
 module mesh(
