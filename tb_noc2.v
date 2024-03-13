@@ -6,8 +6,7 @@ module tb_noc();
     wire [3:0] processor_ready_signals;
     reg [10:0] p0_configure,p1_configure,p2_configure,p3_configure;
     // wire [19:0] temp_path_block_signals;
-     wire [8:0] p0_recieve_data,p1_recieve_data,p2_recieve_data,p3_recieve_data;
-    // wire [19:0] temp_path_block_signals;
+    wire [8:0] p0_recieve_data,p1_recieve_data,p2_recieve_data,p3_recieve_data;
     reg block_all_paths;
     parameter No_DATA 18'b0;
     mesh m1 (.clock(clk), 
