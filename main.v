@@ -27,16 +27,56 @@ module mesh(
     input [10:0]p1_configure,
     input [10:0]p2_configure,
     input [10:0]p3_configure,
-    output reg [3:0] processor_ready_signals,
-    output reg [19:0] temp_path_block_signals
+    input [17:0] r0_input,
+    input [17:0] r1_input,
+    input [17:0] r2_input,
+    input [17:0] r3_input,
+    input block_all_paths,
+    output [3:0] processor_ready_signals,
+    //output [19:0] temp_path_block_signals,
+    output [8:0] p0_recieve_data,
+    output [8:0] p1_recieve_data,
+    output [8:0] p2_recieve_data,
+    output [8:0] p3_recieve_data,
+    output [17:0] r0_output,
+    output [17:0] r1_output,
+    output [17:0] r2_output,
+    output [17:0] r3_output
     );
     reg [10:0] p0_configure1,p1_configure1,p2_configure1,p3_configure1;
+    reg block_all_paths1;
+    //reg [19:0] temp_path_block_signals2;
     wire [3:0] processor_ready_signals1;
-    wire [19:0] temp_path_block_signals1;
+    reg [3:0] processor_ready_signals2;
+    // wire [19:0] temp_path_block_signals1;
+    wire [17:0] r0_output1,r1_output1,r2_output1,r3_output1;
+    reg [17:0] r0_input1,r1_input1,r2_input1,r3_input1;
+    reg [17:0] r0_output2,r1_output2,r2_output2,r3_output2;
+    // assign temp_path_block_signals=temp_path_block_signals2;
+    assign processor_ready_signals=processor_ready_signals2;
+    assign r0_output=r0_output2;
+    assign r1_output=r1_output2;
+    assign r2_output=r2_output2;
+    assign r3_output=r3_output2;
     always@(posedge clock)
     begin
-        processor_ready_signals <= processor_ready_signals1;
-        temp_path_block_signals <= temp_path_block_signals1;
+        r0_input1 <= r0_input;
+        block_all_paths1 <= block_all_paths;
+        r1_input1 <= r1_input;
+        r2_input1 <= r2_input;
+        r3_input1 <= r3_input;
+    end
+    always@(posedge clock)
+    begin
+        r0_output2 <= r0_output1;
+        r1_output2 <= r1_output1;
+        r2_output2 <= r2_output1;
+        r3_output2 <= r3_output1;
+    end
+    always@(posedge clock)
+    begin
+        processor_ready_signals2 <= processor_ready_signals1;
+        // temp_path_block_signals2 <= temp_path_block_signals1;
     end
     always@(posedge clock)
     begin
@@ -45,6 +85,7 @@ module mesh(
         p2_configure1 <= p2_configure;
         p3_configure1 <= p3_configure;
     end
+
     wire [8:0] d01,d10,d23,d32,d02,d20,d13,d31;
     wire [8:0] d00,d11,d22,d33;
     wire [8:0] r00,r11,r22,r33;
@@ -71,7 +112,8 @@ module mesh(
     wire [19:0] R2_control_signals;
     wire [19:0] R3_control_signals;
     // wire [19:0] temp_path_block_signals;
-    parameter NO_DATA=9'b000000000;
+
+    // parameter NO_DATA=9'b000000000;
 //instantiation
     master m0(
         .clock(clock),
@@ -81,12 +123,13 @@ module mesh(
         .P1_signals(P1_signals),
         .P2_signals(P2_signals),
         .P3_signals(P3_signals),
+        .block_all_paths(block_all_paths1),
         .R0_control_signals(R0_control_signals),
         .R1_control_signals(R1_control_signals),
         .R2_control_signals(R2_control_signals),
         .R3_control_signals(R3_control_signals),
-        .response_signals(response_signals),
-        .temp_path_block_signals(temp_path_block_signals1)
+        .response_signals(response_signals)
+        // .temp_path_block_signals(temp_path_block_signals1)
     );
     
     Processing_unit p0(
@@ -98,6 +141,7 @@ module mesh(
             .request_transfer(P0_signals[1]),
             .which_processor(P0_signals[3:2]),
             .processor_ready(processor_ready_signals1[0]),
+            .data_got(p0_recieve_data),
             .tb_request(p0_configure1[0]),
             .tb_processor(p0_configure1[2:1]),
             .tb_len(p0_configure1[10:3])
@@ -112,14 +156,14 @@ module mesh(
         .select_west(R0_control_signals[10:8]),
         .select_processor(R0_control_signals[7:5]),
         .data_north(d20),
-        .data_south(NO_DATA),
+        .data_south(r0_input1[8:0]),
         .data_east(d10),
-        .data_west(NO_DATA),
+        .data_west(r0_input1[17:9]),
         .data_processor(d00),
         .output_north(d02),
-        .output_south(),
+        .output_south(r0_output1[8:0]),
         .output_east(d01),
-        .output_west(),
+        .output_west(r0_output1[17:9]),
         .output_processor(r00),
         .north_ready(Nr0),
         .south_ready(Sr0),
@@ -142,6 +186,7 @@ module mesh(
             .request_transfer(P1_signals[1]),
             .which_processor(P1_signals[3:2]),
             .processor_ready(processor_ready_signals1[1]),
+            .data_got(p1_recieve_data),
             .tb_request(p1_configure1[0]),
             .tb_processor(p1_configure1[2:1]),
             .tb_len(p1_configure1[10:3])
@@ -155,13 +200,13 @@ module mesh(
         .select_west(R1_control_signals[10:8]),
         .select_processor(R1_control_signals[7:5]),
         .data_north(d31),
-        .data_south(NO_DATA),
-        .data_east(NO_DATA),
+        .data_south(r1_input1[8:0]),
+        .data_east(r1_input1[17:9]),
         .data_west(d01),
         .data_processor(d11),
         .output_north(d13),
-        .output_south(),
-        .output_east(),
+        .output_south(r1_output1[8:0]),
+        .output_east(r1_output1[17:9]),
         .output_west(d10),
         .output_processor(r11),
         .north_ready(Nr1),
@@ -184,6 +229,7 @@ module mesh(
             .request_transfer(P2_signals[1]),
             .which_processor(P2_signals[3:2]),
             .processor_ready(processor_ready_signals1[2]),
+            .data_got(p2_recieve_data),
             .tb_request(p2_configure1[0]),
             .tb_processor(p2_configure1[2:1]),
             .tb_len(p2_configure1[10:3])
@@ -196,15 +242,15 @@ module mesh(
         .select_east(R2_control_signals[13:11]),
         .select_west(R2_control_signals[10:8]),
         .select_processor(R2_control_signals[7:5]),
-        .data_north(NO_DATA),
+        .data_north(r2_input1[8:0]),
         .data_south(d02),
         .data_east(d32),
-        .data_west(NO_DATA),
+        .data_west(r2_input1[17:9]),
         .data_processor(d22),
-        .output_north(),
+        .output_north(r2_output1[8:0]),
         .output_south(d20),
         .output_east(d23),
-        .output_west(),
+        .output_west(r2_output1[17:9]),
         .output_processor(r22),
         .north_ready(Nr2),
         .south_ready(Sr2),
@@ -226,6 +272,7 @@ module mesh(
             .request_transfer(P3_signals[1]),
             .which_processor(P3_signals[3:2]),
             .processor_ready(processor_ready_signals1[3]),
+            .data_got(p3_recieve_data),
             .tb_request(p3_configure1[0]),
             .tb_processor(p3_configure1[2:1]),
             .tb_len(p3_configure1[10:3])
@@ -238,14 +285,14 @@ module mesh(
         .select_east(R3_control_signals[13:11]),
         .select_west(R3_control_signals[10:8]),
         .select_processor(R3_control_signals[7:5]),
-        .data_north(NO_DATA),
+        .data_north(r3_input1[8:0]),
         .data_south(d13),
-        .data_east(NO_DATA),
+        .data_east(r3_input1[17:9]),
         .data_west(d23),
         .data_processor(d33),
-        .output_north(),
+        .output_north(r3_output1[8:0]),
         .output_south(d31),
-        .output_east(),
+        .output_east(r3_output1[17:9]),
         .output_west(d32),
         .output_processor(r33),
         .north_ready(Nr3),
