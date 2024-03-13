@@ -55,11 +55,11 @@ module router (
     input [8:0] data_east,
     input [8:0] data_west,
     input [8:0] data_processor,
-    output reg [8:0] output_north,
-    output reg [8:0] output_south,
-    output reg [8:0] output_east,
-    output reg [8:0] output_west,
-    output reg [8:0] output_processor,
+    output [8:0] output_north,
+    output [8:0] output_south,
+    output [8:0] output_east,
+    output [8:0] output_west,
+    output [8:0] output_processor,
     output north_ready,
     output south_ready,
     output east_ready,
@@ -76,6 +76,14 @@ module router (
 
 // temporary variables of output used till clockedge is not reached
     reg [8:0] output_north1,output_south1,output_east1,output_west1,output_processor1; 
+    reg [8:0] output_north2,output_south2,output_east2,output_west2,output_processor2;
+    assign output_north=output_north2;
+    assign output_south=output_south2;
+    assign output_east=output_east2;
+    assign output_west=output_west2;
+    assign output_processor=output_processor2;
+
+
 
 // check whether route is free or not
     reg regNR,regSR,regER,regWR,regPR;
@@ -160,81 +168,81 @@ module router (
     begin
         if(output_north1[8]==1'b1)
         begin
-            regNR1<=1; // If last bit of data packet, make route free
+            regNR1=1; // If last bit of data packet, make route free
         end
         else if(SetNR==1'b1)
         begin
-            regNR1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
+            regNR1=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regNR1<=regNR; //Else continue with the previous value
+            regNR1=regNR; //Else continue with the previous value
         end
     end
     always@(*)
     begin
         if(output_south1[8]==1'b1)
         begin
-            regSR1<=1;// If last bit of data packet, make route free
+            regSR1=1;// If last bit of data packet, make route free
         end
         else if(SetSR==1'b1)
         begin
-            regSR1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
+            regSR1=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regSR1<=regSR; //Else continue with the previous value
+            regSR1=regSR; //Else continue with the previous value
         end
     end
     always@(*)
     begin
         if(output_east1[8]==1'b1)
         begin
-            regER1<=1;// If last bit of data packet, make route free
+            regER1=1;// If last bit of data packet, make route free
         end
         else if(SetER==1'b1)
         begin
-            regER1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
+            regER1=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regER1<=regER; //Else continue with the previous value
+            regER1=regER; //Else continue with the previous value
         end
     end
     always@(*)
     begin
         if(output_west1[8]==1'b1)
         begin
-            regWR1<=1;// If last bit of data packet, make route free
+            regWR1=1;// If last bit of data packet, make route free
         end
         else if(SetWR==1'b1)
         begin
-            regWR1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
+            regWR1=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regWR1<=regWR; //Else continue with the previous value
+            regWR1=regWR; //Else continue with the previous value
         end
     end
     always@(*)
     begin
         if(output_processor1[8]==1'b1)
         begin
-            regPR1<=1;// If last bit of data packet, make route free
+            regPR1=1;// If last bit of data packet, make route free
         end
         else if(SetPR==1'b1)
         begin
-            regPR1<=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
+            regPR1=0; // The master has granted permission to route through this direction, make the path busy (for next incoming packet)
         end
         else
         begin
-            regPR1<=regPR; //Else continue with the previous value
+            regPR1=regPR; //Else continue with the previous value
         end
     end
     //assigning output at posedge of clock or reset
     always@(posedge clock)
     begin
-        output_north<=output_north1; //assign output according to the output of MUX, at clock edge
+        output_north2<=output_north1; //assign output according to the output of MUX, at clock edge
     end
     always@(posedge clock or posedge reset)
     begin
@@ -249,7 +257,7 @@ module router (
     end
     always@(posedge clock)
     begin
-        output_south<=output_south1; //assign output according to the output of MUX, at clock edge
+        output_south2<=output_south1; //assign output according to the output of MUX, at clock edge
     end
     always@(posedge clock or posedge reset)
     begin
@@ -264,7 +272,7 @@ module router (
     end
     always@(posedge clock)
     begin
-        output_east<=output_east1; //assign output according to the output of MUX, at clock edge
+        output_east2<=output_east1; //assign output according to the output of MUX, at clock edge
     end
     always@(posedge clock or posedge reset)
     begin
@@ -279,7 +287,7 @@ module router (
     end
     always@(posedge clock)
     begin
-        output_west<=output_west1; //assign output according to the output of MUX done above, at clock edge
+        output_west2<=output_west1; //assign output according to the output of MUX done above, at clock edge
     end
     always@(posedge clock or posedge reset)
     begin
@@ -294,7 +302,7 @@ module router (
     end
     always@(posedge clock)
     begin
-        output_processor<=output_processor1; //assign output according to the output of MUX done above, at clock edge
+        output_processor2<=output_processor1; //assign output according to the output of MUX done above, at clock edge
     end
     always@(posedge clock or posedge reset)
     begin
