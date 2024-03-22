@@ -42,7 +42,8 @@ Additional Notes:
 */
 
 // Start of the module
-module router (
+
+module router(
     input clock,
     input reset,
     input [2:0] select_north,
@@ -101,9 +102,10 @@ module router (
             3'b010: output_north1 = data_east;
             3'b011: output_north1 = data_west;
             3'b100: output_north1 = data_processor;
-            3'b101: output_north1 = 9'b00000000;
-            3'b110: output_north1 = 9'b00000000;
-            3'b111: output_north1 = 9'b00000000;
+	    default: output_north1 = 9'b000000000;
+            //3'b101: output_north1 = 9'b00000000;
+            //3'b110: output_north1 = 9'b00000000;
+            //3'b111: output_north1 = 9'b00000000;
         endcase
     end
 
@@ -115,9 +117,10 @@ module router (
             3'b010: output_south1 = data_east;
             3'b011: output_south1 = data_west;
             3'b100: output_south1 = data_processor;
-            3'b101: output_south1 = 9'b00000000;
-            3'b110: output_south1 = 9'b00000000;
-            3'b111: output_south1 = 9'b00000000;
+	    default: output_south1 = 9'b000000000;
+            //3'b101: output_south1 = 9'b00000000;
+            //3'b110: output_south1 = 9'b00000000;
+            //3'b111: output_south1 = 9'b00000000;
         endcase
     end
 
@@ -129,9 +132,10 @@ module router (
             3'b010: output_east1 = data_east;
             3'b011: output_east1 = data_west;
             3'b100: output_east1 = data_processor;
-            3'b101: output_east1 = 9'b00000000;
-            3'b110: output_east1 = 9'b00000000;
-            3'b111: output_east1 = 9'b00000000;
+	    default: output_east1 = 9'b000000000;
+            //3'b101: output_east1 = 9'b00000000;
+            //3'b110: output_east1 = 9'b00000000;
+            //3'b111: output_east1 = 9'b00000000;
         endcase
     end
 
@@ -143,9 +147,10 @@ module router (
             3'b010: output_west1 = data_east;
             3'b011: output_west1 = data_west;
             3'b100: output_west1 = data_processor;
-            3'b101: output_west1 = 9'b00000000;
-            3'b110: output_west1 = 9'b00000000;
-            3'b111: output_west1 = 9'b00000000;
+	    default: output_west1 = 9'b000000000;
+            //3'b101: output_west1 = 9'b00000000;
+            //3'b110: output_west1 = 9'b00000000;
+            //3'b111: output_west1 = 9'b00000000;
         endcase
     end
 
@@ -157,9 +162,10 @@ module router (
             3'b010: output_processor1 = data_east;
             3'b011: output_processor1 = data_west;
             3'b100: output_processor1 = data_processor;
-            3'b101: output_processor1 = 9'b00000000;
-            3'b110: output_processor1 = 9'b00000000;
-            3'b111: output_processor1 = 9'b00000000;
+	    default: output_processor1 = 9'b000000000;
+            //3'b101: output_processor1 = 9'b00000000;
+            //3'b110: output_processor1 = 9'b00000000;
+            //3'b111: output_processor1 = 9'b00000000;
         endcase
     end
 
