@@ -17,8 +17,7 @@ Pin Description:
 */
 
 `include"router.v"
-//`include"Master_new.v"
-`include"master.v"
+`include"Master_new.v"
 `include"P_unit.v"
 
 module mesh(
@@ -53,7 +52,7 @@ module mesh(
     wire [17:0] r0_output1,r1_output1,r2_output1,r3_output1;
     reg [17:0] r0_input1,r1_input1,r2_input1,r3_input1;
     reg [17:0] r0_output2,r1_output2,r2_output2,r3_output2;
-    // assign temp_path_block_signals=temp_path_block_signals2;
+    //assign temp_path_block_signals=temp_path_block_signals2;
     assign processor_ready_signals=processor_ready_signals2;
     assign r0_output=r0_output2;
     assign r1_output=r1_output2;

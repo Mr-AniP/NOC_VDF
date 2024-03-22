@@ -23,23 +23,27 @@ module master(
     input [2:0] P1_signals,
     input [2:0] P2_signals,
     input [2:0] P3_signals,
+    input block_all_paths,
     output [19:0] R0_control_signals,
     output [19:0] R1_control_signals,
     output [19:0] R2_control_signals,
     output [19:0] R3_control_signals,
-    output [3:0] response_signals,
-    output [19:0] temp_path_block_signals
+    output [3:0] response_signals
+    // output [19:0] temp_path_block_signals
 );
     // //temporary variables
     reg [19:0] R0_control_signals1, R1_control_signals1, R2_control_signals1, R3_control_signals1;
     reg [19:0] R0_control_signals2, R1_control_signals2, R2_control_signals2, R3_control_signals2;
     reg [3:0] response_signals1;
     reg [3:0] response_signals2;
-    // assign R0_control_signals;
-    assign R0_control_signals = {R0_control_signals2[19:17],3'b111,R0_control_signals2[13:11],3'b111,R0_control_signals2[7:4],1'b0,R0_control_signals2[2],1'b0,R0_control_signals2[0]};
-    assign R1_control_signals = {R1_control_signals2[19:17],6'b111111,R1_control_signals2[10:4],2'b0,R1_control_signals2[1:0]};
-    assign R2_control_signals = {3'b111,R2_control_signals2[16:11],3'b111,R2_control_signals2[7:5],1'b0,R2_control_signals2[3:2],1'b0,R2_control_signals2[0]};
-    assign R3_control_signals = {3'b111,R3_control_signals2[16:14],3'b111,R3_control_signals2[10:5],1'b0,R3_control_signals2[3],1'b0,R3_control_signals2[1:0]};
+    assign R0_control_signals = R0_control_signals2;
+    assign R1_control_signals = R1_control_signals2;
+    assign R2_control_signals = R2_control_signals2;
+    assign R3_control_signals = R3_control_signals2;
+    //assign R0_control_signals = {R0_control_signals2[19:17],3'b111,R0_control_signals2[13:11],3'b111,R0_control_signals2[7:4],1'b0,R0_control_signals2[2],1'b0,R0_control_signals2[0]};
+    //assign R1_control_signals = {R1_control_signals2[19:17],6'b111111,R1_control_signals2[10:4],2'b0,R1_control_signals2[1:0]};
+    ///assign R2_control_signals = {3'b111,R2_control_signals2[16:11],3'b111,R2_control_signals2[7:5],1'b0,R2_control_signals2[3:2],1'b0,R2_control_signals2[0]};
+    //assign R3_control_signals = {3'b111,R3_control_signals2[16:14],3'b111,R3_control_signals2[10:5],1'b0,R3_control_signals2[3],1'b0,R3_control_signals2[1:0]};
     assign response_signals = response_signals2;
     //Preliminary conditions for reset and and every posedge
     always@(posedge clock or posedge reset)
@@ -76,19 +80,19 @@ module master(
                     begin
                         // R0_control_signals1_0[7:5] =3'b100; //R0 from processor to processor
                         // R0_control_signals1_0[0] = 1'b1; //processor is active
-                        R0_control_signals1_0[19:0]<={R0_control_signals2[19:8],3'b100,4'b0,1'b1};
-                        R1_control_signals1_0[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_0 <= 1'b1;
+                        R0_control_signals1_0[19:0]={R0_control_signals2[19:8],3'b100,4'b0,1'b1};
+                        R1_control_signals1_0[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_0 = 1'b1;
                     end
                     else
                     begin
-                        R0_control_signals1_0[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_0[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_0 <= 1'b0;
+                        R0_control_signals1_0[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_0[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_0 = 1'b0;
                     end
                 end
                 2'b01://0 to 1
@@ -99,11 +103,11 @@ module master(
                         // R0_control_signals1_0[2] = 1'b1;// east is active
                         // R1_control_signals1_0[7:5]=3'b011;//from west of R1 to its processor
                         // R1_control_signals1_0[0] = 1'b1;//processor is active
-                        R1_control_signals1_0[19:0]<={R1_control_signals2[19:8],3'b011,4'b0,1'b1};
-                        R0_control_signals1_0[19:0]<={R0_control_signals2[19:14],3'b100,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_0 <= 1'b1;
+                        R1_control_signals1_0[19:0]={R1_control_signals2[19:8],3'b011,4'b0,1'b1};
+                        R0_control_signals1_0[19:0]={R0_control_signals2[19:14],3'b100,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_0 = 1'b1;
                     end
                     else if(path_free_bits[2]==1'b1)
                     begin//indirect 0-2-3-1
@@ -115,19 +119,19 @@ module master(
                         // R3_control_signals1_0[3]=1'b1;//south is active
                         // R1_control_signals1_0[7:5]=3'b000;//from north of R1 to its processor
                         // R1_control_signals1_0[0] = 1'b1; //processor is active
-                        R1_control_signals1_0[19:0]<={R1_control_signals2[19:8],3'b000,4'b0,1'b1};
-                        R0_control_signals1_0[19:0]<={3'b100,R0_control_signals2[16:5],1'b1,4'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:14],3'b001,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:17],3'b011,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
-                        response_signals1_0 <= 1'b1;
+                        R1_control_signals1_0[19:0]={R1_control_signals2[19:8],3'b000,4'b0,1'b1};
+                        R0_control_signals1_0[19:0]={3'b100,R0_control_signals2[16:5],1'b1,4'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:14],3'b001,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:17],3'b011,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        response_signals1_0 = 1'b1;
                     end
                     else
                     begin
-                        R0_control_signals1_0[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_0[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_0 <= 1'b0;
+                        R0_control_signals1_0[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_0[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_0 = 1'b0;
                     end
                 end
                 2'b10://from 0 to 2
@@ -138,11 +142,11 @@ module master(
                         // R0_control_signals1_0[4] = 1'b1; //north edge is active
                         // R2_control_signals1_0[7:5] = 3'b001; //from South of R2 to its processor
                         // R2_control_signals1_0[0] = 1'b1;  //processor edge is active
-                        response_signals1_0 <= 1'b1; //Processor of Router 1 active
-                        R1_control_signals1_0[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R0_control_signals1_0[19:0]<={3'b100,R0_control_signals2[16:5],1'b1,4'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:8],3'b001,4'b0,1'b1};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:5],5'b0};
+                        response_signals1_0 = 1'b1; //Processor of Router 1 active
+                        R1_control_signals1_0[19:0]={R1_control_signals2[19:5],5'b0};
+                        R0_control_signals1_0[19:0]={3'b100,R0_control_signals2[16:5],1'b1,4'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:8],3'b001,4'b0,1'b1};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:5],5'b0};
                     end
                     else if (path_free_bits[4]==1'b1)
                     begin//indirect 0-1-3-2
@@ -154,19 +158,19 @@ module master(
                         // R3_control_signals1_0[1]=1'b1; //west is active
                         // R2_control_signals1_0[7:5] = 3'b010; //from west of R2 to its processor
                         // R2_control_signals1_0[0] = 1'b1;  //processor edge is active
-                        response_signals1_0 <= 1'b1;
-                        R1_control_signals1_0[19:0]<={3'b011,R1_control_signals2[16:5],1'b1,4'b0};
-                        R0_control_signals1_0[19:0]<={R0_control_signals2[19:14],3'b100,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:8],3'b010,4'b0,1'b1};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:11],3'b001,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        response_signals1_0 = 1'b1;
+                        R1_control_signals1_0[19:0]={3'b011,R1_control_signals2[16:5],1'b1,4'b0};
+                        R0_control_signals1_0[19:0]={R0_control_signals2[19:14],3'b100,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:8],3'b010,4'b0,1'b1};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:11],3'b001,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_0[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_0[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_0 <= 1'b0;
+                        R0_control_signals1_0[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_0[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_0 = 1'b0;
                     end
                 end
                 2'b11://0 to 3
@@ -179,11 +183,11 @@ module master(
                         // R2_control_signals1_0[2] = 1'b1;//east is active
                         // R3_control_signals1_0[7:5]=3'b011;//from west to processor
                         // R3_control_signals1_0[0]=1'b1;//processor is active
-                        response_signals1_0 <= 1'b1;
-                        R1_control_signals1_0[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R0_control_signals1_0[19:0]<={3'b100,R0_control_signals2[16:5],1'b1,4'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:14],3'b001,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:8],3'b011,4'b0,1'b1};
+                        response_signals1_0 = 1'b1;
+                        R1_control_signals1_0[19:0]={R1_control_signals2[19:5],5'b0};
+                        R0_control_signals1_0[19:0]={3'b100,R0_control_signals2[16:5],1'b1,4'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:14],3'b001,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:8],3'b011,4'b0,1'b1};
                     end
                     else if(path_free_bits[6]==1'b1)
                     begin//0-1-3
@@ -193,30 +197,38 @@ module master(
                         // R1_control_signals1_0[4] = 1'b1;//north is active
                         // R3_control_signals1_0[7:5]=3'b001;//from south of R3 to processor
                         // R3_control_signals1_0[0]=1'b1;//processor is active
-                        response_signals1_0 <= 1'b1;
-                        R0_control_signals1_0[19:0]<={R0_control_signals2[19:14],3'b100,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R1_control_signals1_0[19:0]<={3'b011,R1_control_signals2[16:5],1'b1,4'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:8],3'b001,4'b0,1'b1};
+                        response_signals1_0 = 1'b1;
+                        R0_control_signals1_0[19:0]={R0_control_signals2[19:14],3'b100,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R1_control_signals1_0[19:0]={3'b011,R1_control_signals2[16:5],1'b1,4'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:8],3'b001,4'b0,1'b1};
                     end
                     else
                     begin
-                        R0_control_signals1_0[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_0[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_0[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_0[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_0 <= 1'b0;
+                        R0_control_signals1_0[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_0[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_0[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_0[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_0 = 1'b0;
                     end
                 end
             endcase
         end
+        else if(block_all_paths==1'b1)
+        begin
+            R0_control_signals1_0[19:0]={20{1'b1}};
+            R1_control_signals1_0[19:0]={20{1'b1}};
+            R2_control_signals1_0[19:0]={20{1'b1}};
+            R3_control_signals1_0[19:0]={20{1'b1}};
+            response_signals1_0 = 1'b0;
+        end
         else
         begin
-            R0_control_signals1_0[4:0]<={R0_control_signals[19:5],5'b0};
-            R1_control_signals1_0[4:0]<={R1_control_signals[19:5],5'b0};
-            R2_control_signals1_0[4:0]<={R2_control_signals[19:5],5'b0};
-            R3_control_signals1_0[4:0]<={R3_control_signals[19:5],5'b0};
-            response_signals1_0 <= 1'b0;
+            R0_control_signals1_0[19:0]={R0_control_signals2[19:5],5'b0};
+            R1_control_signals1_0[19:0]={R1_control_signals2[19:5],5'b0};
+            R2_control_signals1_0[19:0]={R2_control_signals2[19:5],5'b0};
+            R3_control_signals1_0[19:0]={R3_control_signals2[19:5],5'b0};
+            response_signals1_0 = 1'b0;
         end
     end
     // assign response_signals = response_signals1_0;
@@ -240,11 +252,11 @@ module master(
                         // R1_control_signals1_1[1] = 1'b1;
                         // R0_control_signals1_1[7:5]=3'b010;
                         // R0_control_signals1_1[0] = 1'b1;
-                        response_signals1_1 <= 1'b1;
-                        R0_control_signals1_1[19:0]<={R0_control_signals2[19:8],3'b010,4'b0,1'b1};
-                        R1_control_signals1_1[19:0]<={R1_control_signals2[19:11],3'b100,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:5],5'b0};
+                        response_signals1_1 = 1'b1;
+                        R0_control_signals1_1[19:0]={R0_control_signals2[19:8],3'b010,4'b0,1'b1};
+                        R1_control_signals1_1[19:0]={R1_control_signals2[19:11],3'b100,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:5],5'b0};
                     end
                     else if(path_free_bits[9]==1'b1)
                     begin//indirect
@@ -256,19 +268,19 @@ module master(
                         // R2_control_signals1_1[3]=1'b1;
                         // R0_control_signals1_1[7:5]=3'b000;
                         // R0_control_signals1_1[0] = 1'b1;
-                        response_signals1_1 <= 1'b1;
-                        R0_control_signals1_1[19:0]<={R0_control_signals2[19:8],3'b000,4'b0,1'b1};
-                        R1_control_signals1_1[19:0]<={3'b100,R1_control_signals2[16:5],1'b1,4'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:17],3'b010,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:11],3'b001,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        response_signals1_1 = 1'b1;
+                        R0_control_signals1_1[19:0]={R0_control_signals2[19:8],3'b000,4'b0,1'b1};
+                        R1_control_signals1_1[19:0]={3'b100,R1_control_signals2[16:5],1'b1,4'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:17],3'b010,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:11],3'b001,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_1[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_1[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_1 <= 1'b0;
+                        R0_control_signals1_1[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_1[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_1 = 1'b0;
                     end
                 end
                 2'b01://1 to 1
@@ -277,19 +289,19 @@ module master(
                     begin
                         // R1_control_signals1_1[7:5] =3'b100; //R1 from processor to processor
                         // R1_control_signals1_1[0] = 1'b1; //processor is active
-                        response_signals1_1 <= 1'b1;
-                        R0_control_signals1_1[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_1[19:0]<={R1_control_signals2[19:8],3'b100,4'b0,1'b1};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:5],5'b0};
+                        response_signals1_1 = 1'b1;
+                        R0_control_signals1_1[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_1[19:0]={R1_control_signals2[19:8],3'b100,4'b0,1'b1};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:5],5'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_1[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_1[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_1 <= 1'b0;
+                        R0_control_signals1_1[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_1[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_1 = 1'b0;
                     end
                 end
                 2'b10: //from 1 to 2
@@ -302,11 +314,11 @@ module master(
                         // R3_control_signals1_1[1] = 1'b1; //west is active
                         // R2_control_signals1_1[7:5]=3'b010; //from R2 from east to processor
                         // R2_control_signals1_1[0]=1'b1; //processor is active
-                        response_signals1_1 <= 1'b1;
-                        R0_control_signals1_1[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_1[19:0]<={3'b100,R1_control_signals2[16:5],1'b1,4'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:11],3'b001,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:8],3'b010, 4'b0, 1'b1};
+                        response_signals1_1 = 1'b1;
+                        R0_control_signals1_1[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_1[19:0]={3'b100,R1_control_signals2[16:5],1'b1,4'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:11],3'b001,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:8],3'b010, 4'b0, 1'b1};
                     end
                     else if(path_free_bits[13]==1'b1)
                     begin//1-0-2
@@ -316,20 +328,20 @@ module master(
                         // R0_control_signals1_1[4] = 1'b1;//north is active
                         // R2_control_signals1_1[7:5]=3'b001;//R2 from south to processor
                         // R2_control_signals1_1[0]=1'b1;//processor is active
-                        response_signals1_1 <= 1'b1;
+                        response_signals1_1 = 1'b1;
 
-                        R0_control_signals1_1[19:0]<={3'b010,R0_control_signals2[16:5],1'b1,4'b0};
-                        R1_control_signals1_1[19:0]<={R1_control_signals2[19:11],3'b100,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:8],3'b001, 4'b0, 1'b1};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:5],5'b0};
+                        R0_control_signals1_1[19:0]={3'b010,R0_control_signals2[16:5],1'b1,4'b0};
+                        R1_control_signals1_1[19:0]={R1_control_signals2[19:11],3'b100,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:8],3'b001, 4'b0, 1'b1};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:5],5'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_1[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_1[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_1 <= 1'b0;
+                        R0_control_signals1_1[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_1[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_1 = 1'b0;
                     end
                 end
                 2'b11://1 to3
@@ -340,12 +352,12 @@ module master(
                         // R1_control_signals1_1[4] = 1'b1;
                         // R3_control_signals1_1[7:5]=3'b001;
                         // R3_control_signals1_1[0]=1'b1;
-                        response_signals1_1 <= 1'b1;
+                        response_signals1_1 = 1'b1;
                         
-                        R0_control_signals1_1[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_1[19:0]<={3'b100,R1_control_signals2[16:5],1'b1,4'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:8],3'b001, 4'b0, 1'b1};
+                        R0_control_signals1_1[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_1[19:0]={3'b100,R1_control_signals2[16:5],1'b1,4'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:8],3'b001, 4'b0, 1'b1};
                         
                     end
                     else if(path_free_bits[11]==1'b1)
@@ -358,31 +370,39 @@ module master(
                         // R2_control_signals1_1[2] = 1'b1;
                         // R3_control_signals1_1[7:5]=3'b011;
                         // R3_control_signals1_1[0]=1'b1;
-                        response_signals1_1 <= 1'b1;
+                        response_signals1_1 = 1'b1;
                         
-                        R0_control_signals1_1[19:0]<={3'b010,R0_control_signals2[16:5],1'b1,4'b0};
-                        R1_control_signals1_1[19:0]<={R1_control_signals2[19:11],3'b100,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:14],3'b001,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:8],3'b011, 4'b0, 1'b1};
+                        R0_control_signals1_1[19:0]={3'b010,R0_control_signals2[16:5],1'b1,4'b0};
+                        R1_control_signals1_1[19:0]={R1_control_signals2[19:11],3'b100,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:14],3'b001,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:8],3'b011, 4'b0, 1'b1};
                     end
                     else
                     begin
-                        R0_control_signals1_1[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_1[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_1[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_1[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_1 <= 1'b0;
+                        R0_control_signals1_1[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_1[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_1[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_1[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_1 = 1'b0;
                     end
                 end
             endcase
         end
+        else if(block_all_paths==1'b1)
+        begin
+            R0_control_signals1_1[19:0]={20{1'b1}};
+            R1_control_signals1_1[19:0]={20{1'b1}};
+            R2_control_signals1_1[19:0]={20{1'b1}};
+            R3_control_signals1_1[19:0]={20{1'b1}};
+            response_signals1_1 = 1'b0;
+        end
         else
         begin
-            R0_control_signals1_1[19:0]<={R0_control_signals2[19:5],5'b0};
-            R1_control_signals1_1[19:0]<={R1_control_signals2[19:5],5'b0};
-            R2_control_signals1_1[19:0]<={R2_control_signals2[19:5],5'b0};
-            R3_control_signals1_1[19:0]<={R3_control_signals2[19:5],5'b0};
-            response_signals1_1 <= 1'b0;
+            R0_control_signals1_1[19:0]={R0_control_signals2[19:5],5'b0};
+            R1_control_signals1_1[19:0]={R1_control_signals2[19:5],5'b0};
+            R2_control_signals1_1[19:0]={R2_control_signals2[19:5],5'b0};
+            R3_control_signals1_1[19:0]={R3_control_signals2[19:5],5'b0};
+            response_signals1_1 = 1'b0;
         end
     end
 
@@ -402,12 +422,12 @@ module master(
                         // R2_control_signals1_2[3] = 1'b1; 
                         // R0_control_signals1_2[7:5] = 3'b000;
                         // R0_control_signals1_2[0] = 1'b1;
-                        response_signals1_2 <= 1'b1;
+                        response_signals1_2 = 1'b1;
 
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:8],3'b000,4'b0,1'b1};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:17],3'b100,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:5],5'b0};
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:8],3'b000,4'b0,1'b1};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:17],3'b100,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:5],5'b0};
                     end
                     else if (path_free_bits[18]==1'b1)
                     begin //indirect
@@ -419,20 +439,20 @@ module master(
                         // R1_control_signals1_2[1]=1'b1; 
                         // R0_control_signals1_2[7:5] = 3'b010;
                         // R0_control_signals1_2[0] = 1'b1;
-                        response_signals1_2 <= 1'b1;
+                        response_signals1_2 = 1'b1;
 
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:8],3'b010,4'b0,1'b1};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:11], 3'b000,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:14],3'b100, R2_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:17],3'b011,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:8],3'b010,4'b0,1'b1};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:11], 3'b000,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:14],3'b100, R2_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:17],3'b011,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_2 <= 1'b0;
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_2 = 1'b0;
                     end
                 end
                 2'b01://2 to 1
@@ -445,12 +465,12 @@ module master(
                         // R3_control_signals1_2[3] = 1'b1; 
                         // R1_control_signals1_2[7:5]=3'b000;
                         // R1_control_signals1_2[0] = 1'b1;
-                        response_signals1_2 <= 1'b1;
+                        response_signals1_2 = 1'b1;
 
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:8],3'b000,4'b0,1'b1};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:14],3'b100,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:17],3'b011,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:8],3'b000,4'b0,1'b1};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:14],3'b100,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:17],3'b011,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
                     end
                     else if(path_free_bits[19]==1'b1)
                     begin//2-0-1
@@ -460,20 +480,20 @@ module master(
                         // R0_control_signals1_2[2] = 1'b1;
                         // R1_control_signals1_2[7:5]=3'b011;
                         // R1_control_signals1_2[0] = 1'b1;
-                        response_signals1_2 <= 1'b1;
+                        response_signals1_2 = 1'b1;
 
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:14],3'b000,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:8],3'b011,4'b0,1'b1};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:17],3'b100,R2_control_signals2[13:5], 1'b0, 1'b1,3'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:5],5'b0};
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:14],3'b000,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:8],3'b011,4'b0,1'b1};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:17],3'b100,R2_control_signals2[13:5], 1'b0, 1'b1,3'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:5],5'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_2 <= 1'b0;
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_2 = 1'b0;
                     end
                 end
                 2'b10://2 to 2
@@ -482,19 +502,19 @@ module master(
                     begin
                         //R2_control_signals1_2[7:5] =3'b100; //R2 from processor to processor
                         //R2_control_signals1_2[0] = 1'b1; //processor is active
-                        response_signals1_2 <= 1'b1;
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:8],3'b100,4'b0,1'b1};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:5],5'b0};
+                        response_signals1_2 = 1'b1;
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:8],3'b100,4'b0,1'b1};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:5],5'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_2 <= 1'b0;
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_2 = 1'b0;
                     end
                 end
                 2'b11: //from 2 to 3
@@ -505,11 +525,11 @@ module master(
                         //R2_control_signals1_2[2] = 1'b1;//east is active
                         //R3_control_signals1_2[7:5]=3'b011;//R3 from west to processor
                         //R3_control_signals1_2[0] = 1'b1;//processor is active
-                        response_signals1_2 <= 1'b1;
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:14],3'b100,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:8],3'b011,4'b0,1'b1};
+                        response_signals1_2 = 1'b1;
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:14],3'b100,R2_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:8],3'b011,4'b0,1'b1};
                     end
                     else if(path_free_bits[16]==1'b1)
                     begin//indirect
@@ -521,30 +541,38 @@ module master(
                         //R1_control_signals1_2[4]=1'b1;//north is active
                         //R3_control_signals1_2[7:5]=3'b001;//from R3 south to processor
                         //R3_control_signals1_2[0] = 1'b1;//processor is active
-                        response_signals1_2 <= 1'b1;
-                        R1_control_signals1_2[19:0]<={3'b011,R1_control_signals2[16:5],1'b1,4'b0};
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:14],3'b000,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:17],3'b100,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:8],3'b001,4'b0,1'b1};
+                        response_signals1_2 = 1'b1;
+                        R1_control_signals1_2[19:0]={3'b011,R1_control_signals2[16:5],1'b1,4'b0};
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:14],3'b000,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:17],3'b100,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:8],3'b001,4'b0,1'b1};
                     end
                     else
                     begin
-                        R0_control_signals1_2[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_2[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_2[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_2[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_2 <= 1'b0;
+                        R0_control_signals1_2[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_2[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_2[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_2[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_2 = 1'b0;
                     end
                 end
             endcase
         end
+        else if(block_all_paths==1'b1)
+        begin
+            R0_control_signals1_2[19:0]={20{1'b1}};
+            R1_control_signals1_2[19:0]={20{1'b1}};
+            R2_control_signals1_2[19:0]={20{1'b1}};
+            R3_control_signals1_2[19:0]={20{1'b1}};
+            response_signals1_2 = 1'b0;
+        end
         else
         begin
-            R0_control_signals1_2[19:0]<={R0_control_signals2[19:5],5'b0};
-            R1_control_signals1_2[19:0]<={R1_control_signals2[19:5],5'b0};
-            R2_control_signals1_2[19:0]<={R2_control_signals2[19:5],5'b0};
-            R3_control_signals1_2[19:0]<={R3_control_signals2[19:5],5'b0};
-            response_signals1_2 <= 1'b0;
+            R0_control_signals1_2[19:0]={R0_control_signals2[19:5],5'b0};
+            R1_control_signals1_2[19:0]={R1_control_signals2[19:5],5'b0};
+            R2_control_signals1_2[19:0]={R2_control_signals2[19:5],5'b0};
+            R3_control_signals1_2[19:0]={R3_control_signals2[19:5],5'b0};
+            response_signals1_2 = 1'b0;
         end
     end
 
@@ -566,11 +594,11 @@ module master(
                         //R1_control_signals1_3[1] = 1'b1;
                         //R0_control_signals1_3[7:5]=3'b010;
                         //R0_control_signals1_3[0] = 1'b1;
-                        response_signals1_3 <= 1'b1;
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:17],3'b100,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:11],3'b000,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:8],3'b010,4'b0,1'b1};
+                        response_signals1_3 = 1'b1;
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:17],3'b100,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:11],3'b000,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:5],5'b0};
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:8],3'b010,4'b0,1'b1};
                     end
                     else if(path_free_bits[27]==1'b1)
                     begin//3-2-0
@@ -580,19 +608,19 @@ module master(
                         //R2_control_signals1_3[3] = 1'b1;
                         //R0_control_signals1_3[7:5]=3'b000;
                         //R0_control_signals1_3[0] = 1'b1;
-                        response_signals1_3 <= 1'b1;
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:8],3'b000,4'b0,1'b1};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:17],3'b010,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:11],3'b100,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        response_signals1_3 = 1'b1;
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:8],3'b000,4'b0,1'b1};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:17],3'b010,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:11],3'b100,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_3 <= 1'b0;
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_3 = 1'b0;
                     end
                 end
                 2'b01://3 to 1
@@ -603,11 +631,11 @@ module master(
                         //R3_control_signals1_3[3] = 1'b1;
                         //R1_control_signals1_3[7:5]=3'b000;
                         //R1_control_signals1_3[0]=1'b1;
-                        response_signals1_3 <= 1'b1;
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:8],3'b000,4'b0,1'b1};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:17],3'b100,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        response_signals1_3 = 1'b1;
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:8],3'b000,4'b0,1'b1};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:17],3'b100,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
                     end
                     else if(path_free_bits[25]==1'b1)
                     begin//indirect
@@ -619,19 +647,19 @@ module master(
                         //R0_control_signals1_3[2] = 1'b1;
                         //R1_control_signals1_3[7:5]=3'b011;
                         //R1_control_signals1_3[0]=1'b1;
-                        response_signals1_3 <= 1'b1;
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:14],3'b000,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:8],3'b011, 4'b0, 1'b1};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:17],3'b010,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:11],3'b100,R3_control_signals2[7:5], 3'b0, 1'b1,1'b0};
+                        response_signals1_3 = 1'b1;
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:14],3'b000,R0_control_signals2[10:5],2'b0,1'b1,2'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:8],3'b011, 4'b0, 1'b1};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:17],3'b010,R2_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:11],3'b100,R3_control_signals2[7:5], 3'b0, 1'b1,1'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_3 <= 1'b0;
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_3 = 1'b0;
                     end
                 end
                 2'b10://3 to 2
@@ -642,11 +670,11 @@ module master(
                         //R3_control_signals1_3[1] = 1'b1; 
                         //R2_control_signals1_3[7:5]=3'b010;
                         //R2_control_signals1_3[0]=1'b1;
-                        response_signals1_3 <= 1'b1;
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:8],3'b010,4'b0,1'b1};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:11],3'b100,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        response_signals1_3 = 1'b1;
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:8],3'b010,4'b0,1'b1};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:11],3'b100,R3_control_signals2[7:5],3'b0,1'b1,1'b0};
                     end
                     else if(path_free_bits[23]==1'b1)
                     begin//indirect
@@ -658,19 +686,19 @@ module master(
                         //R0_control_signals1_3[4] = 1'b1;//north is active
                         //R2_control_signals1_3[7:5]=3'b001;//R2 from south to processor
                         //R2_control_signals1_3[0]=1'b1;//processor is active
-                        response_signals1_3 <= 1'b1;
-                        R0_control_signals1_3[19:0]<={3'b010,R0_control_signals2[16:5],1'b1,4'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:11],3'b000,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:8],3'b001, 4'b0, 1'b1};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:17],3'b100,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
+                        response_signals1_3 = 1'b1;
+                        R0_control_signals1_3[19:0]={3'b010,R0_control_signals2[16:5],1'b1,4'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:11],3'b000,R1_control_signals2[7:5],3'b0,1'b1,1'b0};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:8],3'b001, 4'b0, 1'b1};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:17],3'b100,R3_control_signals2[13:5],1'b0,1'b1,3'b0};
                     end
                     else
                     begin
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_3 <= 1'b0;
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_3 = 1'b0;
                     end
                 end
                 2'b11: //3 to 3
@@ -679,31 +707,39 @@ module master(
                     begin
                         //R3_control_signals1_3[7:5] =3'b100; //R3 from processor to processor
                         //R3_control_signals1_3[0] = 1'b1; //processor is active
-                        response_signals1_3 <= 1'b1;
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:8],3'b100,4'b0,1'b1};
+                        response_signals1_3 = 1'b1;
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:8],3'b100,4'b0,1'b1};
 
                     end
                     else
                     begin
-                        R0_control_signals1_3[19:0]<={R0_control_signals2[19:5],5'b0};
-                        R1_control_signals1_3[19:0]<={R1_control_signals2[19:5],5'b0};
-                        R2_control_signals1_3[19:0]<={R2_control_signals2[19:5],5'b0};
-                        R3_control_signals1_3[19:0]<={R3_control_signals2[19:5],5'b0};
-                        response_signals1_3 <= 1'b0;
+                        R0_control_signals1_3[19:0]={R0_control_signals2[19:5],5'b0};
+                        R1_control_signals1_3[19:0]={R1_control_signals2[19:5],5'b0};
+                        R2_control_signals1_3[19:0]={R2_control_signals2[19:5],5'b0};
+                        R3_control_signals1_3[19:0]={R3_control_signals2[19:5],5'b0};
+                        response_signals1_3 = 1'b0;
                     end
                 end
             endcase
         end
+        else if(block_all_paths==1'b1)
+        begin
+            R0_control_signals1_3[19:0]={20{1'b1}};
+            R1_control_signals1_3[19:0]={20{1'b1}};
+            R2_control_signals1_3[19:0]={20{1'b1}};
+            R3_control_signals1_3[19:0]={20{1'b1}};
+            response_signals1_3 = 1'b0;
+        end
         else
         begin
-            R0_control_signals1_3[19:0]<={R0_control_signals2[19:5],5'b0};
-            R1_control_signals1_3[19:0]<={R1_control_signals2[19:5],5'b0};
-            R2_control_signals1_3[19:0]<={R2_control_signals2[19:5],5'b0};
-            R3_control_signals1_3[19:0]<={R3_control_signals2[19:5],5'b0};
-            response_signals1_3 <= 1'b0;
+            R0_control_signals1_3[19:0]={R0_control_signals2[19:5],5'b0};
+            R1_control_signals1_3[19:0]={R1_control_signals2[19:5],5'b0};
+            R2_control_signals1_3[19:0]={R2_control_signals2[19:5],5'b0};
+            R3_control_signals1_3[19:0]={R3_control_signals2[19:5],5'b0};
+            response_signals1_3 = 1'b0;
         end
     end
 
@@ -713,25 +749,25 @@ module master(
     reg [19:0] reg0_1,reg1_1,reg2_1,reg3_1; 
     always@(*)
     begin
-        response_signals1[0]<=response_signals1_0;
+        response_signals1[0]=response_signals1_0;
     end
     always@(*)
     begin
         if(sig0_1==5'b0)
         begin
-            reg0_1 <= R0_control_signals1_0 | R0_control_signals1_1;
-            reg1_1 <= R1_control_signals1_0 | R1_control_signals1_1;
-            reg2_1 <= R2_control_signals1_0 | R2_control_signals1_1;
-            reg3_1 <= R3_control_signals1_0 | R3_control_signals1_1;
-            response_signals1[1]<=response_signals1_1;
+            reg0_1 = R0_control_signals1_0 | R0_control_signals1_1;
+            reg1_1 = R1_control_signals1_0 | R1_control_signals1_1;
+            reg2_1 = R2_control_signals1_0 | R2_control_signals1_1;
+            reg3_1 = R3_control_signals1_0 | R3_control_signals1_1;
+            response_signals1[1]=response_signals1_1;
         end
         else
         begin
-            response_signals1[1]<=1'b0;
-            reg0_1 <= R0_control_signals1_0;
-            reg1_1 <= R1_control_signals1_0;
-            reg2_1 <= R2_control_signals1_0;
-            reg3_1 <= R3_control_signals1_0;
+            response_signals1[1]=1'b0;
+            reg0_1 = R0_control_signals1_0;
+            reg1_1 = R1_control_signals1_0;
+            reg2_1 = R2_control_signals1_0;
+            reg3_1 = R3_control_signals1_0;
         end
     end
 
@@ -742,19 +778,19 @@ module master(
     begin
         if(sig01_2==5'b0)
         begin
-            reg0_2 <= reg0_1 | R0_control_signals1_2;
-            reg1_2 <= reg1_1 | R1_control_signals1_2;
-            reg2_2 <= reg2_1 | R2_control_signals1_2;
-            reg3_2 <= reg3_1 | R3_control_signals1_2;
-            response_signals1[2]<=response_signals1_2;
+            reg0_2 = reg0_1 | R0_control_signals1_2;
+            reg1_2 = reg1_1 | R1_control_signals1_2;
+            reg2_2 = reg2_1 | R2_control_signals1_2;
+            reg3_2 = reg3_1 | R3_control_signals1_2;
+            response_signals1[2]=response_signals1_2;
         end
         else
         begin
-            response_signals1[2] <=1'b0;
-            reg0_2 <= reg0_1;
-            reg1_2 <= reg1_1;
-            reg2_2 <= reg2_1;
-            reg3_2 <= reg3_1;
+            response_signals1[2] =1'b0;
+            reg0_2 = reg0_1;
+            reg1_2 = reg1_1;
+            reg2_2 = reg2_1;
+            reg3_2 = reg3_1;
         end
     end
     wire [4:0] sig012_3;
@@ -763,23 +799,23 @@ module master(
     begin
         if(sig012_3==5'b0)
         begin
-            R0_control_signals1 <= reg0_2 | R0_control_signals1_3;
-            R1_control_signals1 <= reg1_2 | R1_control_signals1_3;
-            R2_control_signals1 <= reg2_2 | R2_control_signals1_3;
-            R3_control_signals1 <= reg3_2 | R3_control_signals1_3;
-            response_signals1[3] <=response_signals1_3;
+            R0_control_signals1 = reg0_2 | R0_control_signals1_3;
+            R1_control_signals1 = reg1_2 | R1_control_signals1_3;
+            R2_control_signals1 = reg2_2 | R2_control_signals1_3;
+            R3_control_signals1 = reg3_2 | R3_control_signals1_3;
+            response_signals1[3] =response_signals1_3;
         end
         else
         begin
-            response_signals1[3] <=1'b0;
-            R0_control_signals1 <= reg0_2;
-            R1_control_signals1 <= reg1_2;
-            R2_control_signals1 <= reg2_2;
-            R3_control_signals1 <= reg3_2;
+            response_signals1[3] =1'b0;
+            R0_control_signals1 = reg0_2;
+            R1_control_signals1 = reg1_2;
+            R2_control_signals1 = reg2_2;
+            R3_control_signals1 = reg3_2;
         end
     end
 
-    assign temp_path_block_signals = ~{R3_control_signals1[4:0],R2_control_signals1[4:0],R1_control_signals1[4:0],R0_control_signals1[4:0]}; 
+    //assign temp_path_block_signals = ~{R3_control_signals1[4:0],R2_control_signals1[4:0],R1_control_signals1[4:0],R0_control_signals1[4:0]}; 
 endmodule
 
 // End of the module
