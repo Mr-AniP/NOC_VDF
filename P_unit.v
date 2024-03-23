@@ -179,7 +179,7 @@ module Processing_unit(
     begin
         if(reset==1'b1)
         begin
-            counter_value<=8'b00000001; //if reset, restart from 1
+            counter_value<=8'b00000000; //if reset, restart from 1
         end
         else
         begin
