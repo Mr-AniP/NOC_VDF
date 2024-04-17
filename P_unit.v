@@ -24,25 +24,25 @@ module Processing_unit(
     input [8:0] data_from_router,
     output [8:0] data_to_router,
     output request_transfer,
-    output [1:0] which_processor,
+    output [4:0] which_processor,
     output processor_ready,
     output [8:0] data_got,
     input tb_request,
-    input [1:0] tb_processor,
+    input [4:0] tb_processor,
     input [7:0] tb_len
 );
     reg [8:0] data_got1, data_to_router1;
-    reg [1:0] which_processor1;
+    reg [4:0] which_processor1;
     reg request_transfer1;
     assign data_got=data_got1;
     assign which_processor=which_processor1;
     assign data_to_router=data_to_router1;
     assign request_transfer=request_transfer1;
 
-    always@(posedge clock)
+    always@(*)
     begin
         begin
-            data_got1<=data_from_router; //assign tlast which checks whether last element or not 
+            data_got1=data_from_router; //assign tlast which checks whether last element or not 
             //tlast_prev is assigned 1 clock cycle after tlast is evaluated and assigned
         end
     end
@@ -57,7 +57,7 @@ module Processing_unit(
 //Keeps a note of packets received
     reg [7:0]counter_value;
 //Keeps a note of packets received temporarily till clockedge
-    reg [7:0]counter_value1;
+    reg [8:0]counter_value1;
 
 //  Checks whether last bit or no  
     reg tlast;
@@ -141,7 +141,7 @@ module Processing_unit(
         begin
             tlast1=1'b0; //if reset, no data, therefore definitely not the last bit
         end
-        else if(counter_value1==tb_len)
+        else if(counter_value1[7:0]==tb_len)
         begin
             tlast1=1'b1; //if the number of packets to be sent are transmitted (counter = tb_len) it means it is the last packets so raise tlast to 1  
         end
@@ -167,7 +167,7 @@ module Processing_unit(
     begin
         if(request_line==1 || counter_value==8'b11111111) 
         begin
-            counter_value1=8'b00000001; //if new request or overflow start counter from 1
+            counter_value1=9'b000000001; //if new request or overflow start counter from 1
         end
         else 
         begin
@@ -179,11 +179,11 @@ module Processing_unit(
     begin
         if(reset==1'b1)
         begin
-            counter_value<=8'b00000000; //if reset, restart from 1
+            counter_value<=8'b00000000; //if reset, restart from 0
         end
         else
         begin
-            counter_value<=counter_value1; //else assign the value obtained from computation shown above
+            counter_value<=counter_value1[7:0]; //else assign the value obtained from computation shown above
         end
     end
 

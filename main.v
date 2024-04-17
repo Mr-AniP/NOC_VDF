@@ -11,7 +11,7 @@ Pin Description:
     Reset: 1 bit input port for the reset signal.
     configure_signals: (P0 to P3 in order)
         8 bit to indicate no of transfers in a single transaction (burst size)
-        2 bit indicating destination of transfer
+        5 bit indicating destination of transfer
         1 bit indicates testbench is requesting transfer
     processor_ready_signals: 4 bit output port to indicate the readiness of the processors (in order P3 to P0)
 */
@@ -23,10 +23,14 @@ Pin Description:
 module mesh(
     input clock,
     input reset,
-    input [10:0]p0_configure,
-    input [10:0]p1_configure,
-    input [10:0]p2_configure,
-    input [10:0]p3_configure,
+    input [13:0]p0_configure,
+    input [13:0]p1_configure,
+    input [13:0]p2_configure,
+    input [13:0]p3_configure,
+    input [8:0] R0_signals,
+    input [8:0] R1_signals,
+    input [8:0] R2_signals,
+    input [8:0] R3_signals,
     input [17:0] r0_input,
     input [17:0] r1_input,
     input [17:0] r2_input,
@@ -41,9 +45,11 @@ module mesh(
     output [17:0] r0_output,
     output [17:0] r1_output,
     output [17:0] r2_output,
-    output [17:0] r3_output
+    output [17:0] r3_output,
+    output [3:0] external_response_signals
     );
-    reg [10:0] p0_configure1,p1_configure1,p2_configure1,p3_configure1;
+    reg [13:0] p0_configure1,p1_configure1,p2_configure1,p3_configure1;
+    reg [8:0] R0_signals1,R1_signals1,R2_signals1,R3_signals1;
     reg block_all_paths1;
     //reg [19:0] temp_path_block_signals2;
     wire [3:0] processor_ready_signals1;
@@ -52,12 +58,39 @@ module mesh(
     wire [17:0] r0_output1,r1_output1,r2_output1,r3_output1;
     reg [17:0] r0_input1,r1_input1,r2_input1,r3_input1;
     reg [17:0] r0_output2,r1_output2,r2_output2,r3_output2;
-    //assign temp_path_block_signals=temp_path_block_signals2;
+    wire [8:0] p0_recieve_data1,p1_recieve_data1,p2_recieve_data1,p3_recieve_data1;
+    reg [8:0] p0_recieve_data2,p1_recieve_data2,p2_recieve_data2,p3_recieve_data2;
+    reg [3:0] external_response_signals2;
+    wire [3:0] external_response_signals1;
+    // assign temp_path_block_signals=temp_path_block_signals2;
     assign processor_ready_signals=processor_ready_signals2;
     assign r0_output=r0_output2;
     assign r1_output=r1_output2;
     assign r2_output=r2_output2;
     assign r3_output=r3_output2;
+    assign p0_recieve_data=p0_recieve_data2;
+    assign p1_recieve_data=p1_recieve_data2;
+    assign p2_recieve_data=p2_recieve_data2;
+    assign p3_recieve_data=p3_recieve_data2;
+    assign external_response_signals=external_response_signals2;
+    always@(posedge clock)
+    begin
+        external_response_signals2<=external_response_signals1;
+    end
+    always@(posedge clock)
+    begin
+        R0_signals1 <= R0_signals;
+        R1_signals1 <= R1_signals;
+        R2_signals1 <= R2_signals;
+        R3_signals1 <= R3_signals;
+    end
+    always@(posedge clock)
+    begin
+        p0_recieve_data2<=p0_recieve_data1;
+        p1_recieve_data2<=p1_recieve_data1;
+        p2_recieve_data2<=p2_recieve_data1;
+        p3_recieve_data2<=p3_recieve_data1;
+    end
     always@(posedge clock)
     begin
         r0_input1 <= r0_input;
@@ -99,14 +132,18 @@ module mesh(
     reg [6:0] Path_usage_bits_1;
     reg [6:0] Path_usage_bits_2;
     reg [6:0] Path_usage_bits_3;
+    wire [2:0] dest_free_bits0;
+    wire [2:0] dest_free_bits1;
+    wire [2:0] dest_free_bits2;
+    wire [2:0] dest_free_bits3;
 
     wire [27:0] Path_usage_bits;
     
     wire [3:0] response_signals;
-    wire [3:1] P0_signals;
-    wire [3:1] P1_signals;
-    wire [3:1] P2_signals;
-    wire [3:1] P3_signals;
+    wire [6:1] P0_signals;
+    wire [6:1] P1_signals;
+    wire [6:1] P2_signals;
+    wire [6:1] P3_signals;
     wire [19:0] R0_control_signals;
     wire [19:0] R1_control_signals;
     wire [19:0] R2_control_signals;
@@ -123,12 +160,21 @@ module mesh(
         .P1_signals(P1_signals),
         .P2_signals(P2_signals),
         .P3_signals(P3_signals),
+        .R0_signals(R0_signals1),
+        .R1_signals(R1_signals1),
+        .R2_signals(R2_signals1),
+        .R3_signals(R3_signals1),
+        .dest_free_bits0(dest_free_bits0),
+        .dest_free_bits1(dest_free_bits1),
+        .dest_free_bits2(dest_free_bits2),
+        .dest_free_bits3(dest_free_bits3),
         .block_all_paths(block_all_paths1),
         .R0_control_signals(R0_control_signals),
         .R1_control_signals(R1_control_signals),
         .R2_control_signals(R2_control_signals),
         .R3_control_signals(R3_control_signals),
-        .response_signals(response_signals)
+        .response_signals(response_signals),
+        .response_signals_routers(external_response_signals1)
         // .temp_path_block_signals(temp_path_block_signals1)
     );
     
@@ -139,12 +185,12 @@ module mesh(
             .data_from_router(r00),
             .data_to_router(d00),
             .request_transfer(P0_signals[1]),
-            .which_processor(P0_signals[3:2]),
+            .which_processor(P0_signals[6:2]),
             .processor_ready(processor_ready_signals1[0]),
-            .data_got(p0_recieve_data),
+            .data_got(p0_recieve_data1),
             .tb_request(p0_configure1[0]),
-            .tb_processor(p0_configure1[2:1]),
-            .tb_len(p0_configure1[10:3])
+            .tb_processor(p0_configure1[5:1]),
+            .tb_len(p0_configure1[13:6])
     );
 //Set commands by master
     router r0(
@@ -176,6 +222,7 @@ module mesh(
         .SetWR(R0_control_signals[1]),
         .SetPR(R0_control_signals[0])
     );
+    assign dest_free_bits0={Pr0,Sr0,Wr0};
     
     Processing_unit p1(
             .clock(clock),
@@ -184,12 +231,12 @@ module mesh(
             .data_from_router(r11),
             .data_to_router(d11),
             .request_transfer(P1_signals[1]),
-            .which_processor(P1_signals[3:2]),
+            .which_processor(P1_signals[6:2]),
             .processor_ready(processor_ready_signals1[1]),
-            .data_got(p1_recieve_data),
+            .data_got(p1_recieve_data1),
             .tb_request(p1_configure1[0]),
-            .tb_processor(p1_configure1[2:1]),
-            .tb_len(p1_configure1[10:3])
+            .tb_processor(p1_configure1[5:1]),
+            .tb_len(p1_configure1[13:6])
     );
     router r1(
         .clock(clock),
@@ -220,6 +267,7 @@ module mesh(
         .SetWR(R1_control_signals[1]),
         .SetPR(R1_control_signals[0])
     );
+    assign dest_free_bits1={Pr1,Sr1,Er1};
     Processing_unit p2(
             .clock(clock),
             .reset(reset),
@@ -227,12 +275,12 @@ module mesh(
             .data_from_router(r22),
             .data_to_router(d22),
             .request_transfer(P2_signals[1]),
-            .which_processor(P2_signals[3:2]),
+            .which_processor(P2_signals[6:2]),
             .processor_ready(processor_ready_signals1[2]),
-            .data_got(p2_recieve_data),
+            .data_got(p2_recieve_data1),
             .tb_request(p2_configure1[0]),
-            .tb_processor(p2_configure1[2:1]),
-            .tb_len(p2_configure1[10:3])
+            .tb_processor(p2_configure1[5:1]),
+            .tb_len(p2_configure1[13:6])
     );
     router r2(
         .clock(clock),
@@ -263,6 +311,7 @@ module mesh(
         .SetWR(R2_control_signals[1]),
         .SetPR(R2_control_signals[0])
     );
+    assign dest_free_bits2={Pr2,Nr2,Wr2};
     Processing_unit p3(
             .clock(clock),
             .reset(reset),
@@ -270,12 +319,12 @@ module mesh(
             .data_from_router(r33),
             .data_to_router(d33),
             .request_transfer(P3_signals[1]),
-            .which_processor(P3_signals[3:2]),
+            .which_processor(P3_signals[6:2]),
             .processor_ready(processor_ready_signals1[3]),
-            .data_got(p3_recieve_data),
+            .data_got(p3_recieve_data1),
             .tb_request(p3_configure1[0]),
-            .tb_processor(p3_configure1[2:1]),
-            .tb_len(p3_configure1[10:3])
+            .tb_processor(p3_configure1[5:1]),
+            .tb_len(p3_configure1[13:6])
     );
     router r3(
         .clock(clock),
@@ -306,67 +355,67 @@ module mesh(
         .SetWR(R3_control_signals[1]),
         .SetPR(R3_control_signals[0])
     );
-
+    assign dest_free_bits3={Pr3,Nr3,Er3};
     always @ (*) //router 0
     begin
-        Path_usage_bits_0[0] = Pr0 ; //0 to 0
+        Path_usage_bits_0[0] = 1'b1 ; //0 to 0
         
-        Path_usage_bits_0[1] = Er0 & Pr1; //0 to 1 //flat
-        Path_usage_bits_0[2] = Nr0 & Er2 & Sr3 & Pr1 ; //0 to 1 longer 0-2-3-1
+        Path_usage_bits_0[1] = Er0 ; //0 to 1 //flat
+        Path_usage_bits_0[2] = Nr0 & Er2 & Sr3  ; //0 to 1 longer 0-2-3-1
 
-        Path_usage_bits_0[3] = Nr0 & Pr2; //0 to 2 //vertical
-        Path_usage_bits_0[4] = Er0 & Nr1 & Wr3 & Pr2; //0 to 2 longer 0-1-3-2
+        Path_usage_bits_0[3] = Nr0 ; //0 to 2 //vertical
+        Path_usage_bits_0[4] = Er0 & Nr1 & Wr3 ; //0 to 2 longer 0-1-3-2
 
-        Path_usage_bits_0[5] = Nr0  & Er2  & Pr3 ; //0 to 3 //diagonal (vertical) 0-2-3
-        Path_usage_bits_0[6] = Er0 & Nr1  & Pr3 ; //0 to 3 (flat) 0-1-3
+        Path_usage_bits_0[5] = Nr0  & Er2   ; //0 to 3 //diagonal (vertical) 0-2-3
+        Path_usage_bits_0[6] = Er0 & Nr1   ; //0 to 3 (flat) 0-1-3
 
     end
     
 
     always @ (*) //router1
     begin
-        Path_usage_bits_1[0] = Pr1 ; //1 to 1
+        Path_usage_bits_1[0] = 1'b1 ; //1 to 1
 
-        Path_usage_bits_1[1] = Er1 & Pr0; //1 to 0 //flat
-        Path_usage_bits_1[2] = Nr1  & Wr3 & Sr2 & Pr0 ; //1 to 0 longer 1-3-2-0
+        Path_usage_bits_1[1] = Er1 ; //1 to 0 //flat
+        Path_usage_bits_1[2] = Nr1  & Wr3 & Sr2  ; //1 to 0 longer 1-3-2-0
 
-        Path_usage_bits_1[3] = Nr1  & Pr3 ; //1 to 3 //vertical
-        Path_usage_bits_1[4] = Wr1  & Nr0 & Er2 & Pr3 ; // 1 to 3 longer 1-0-2-3
+        Path_usage_bits_1[3] = Nr1   ; //1 to 3 //vertical
+        Path_usage_bits_1[4] = Wr1  & Nr0 & Er2  ; // 1 to 3 longer 1-0-2-3
         
-        Path_usage_bits_1[5] = Nr1 & Wr3 & Pr2 ; // 1 to 2 //diagonal (vertical) 1-3-2
-        Path_usage_bits_1[6] = Wr1 & Nr0 & Pr2 ; //1 to 2 (flat) 1-0-2
+        Path_usage_bits_1[5] = Nr1 & Wr3  ; // 1 to 2 //diagonal (vertical) 1-3-2
+        Path_usage_bits_1[6] = Wr1 & Nr0  ; //1 to 2 (flat) 1-0-2
 
     end
 
     
     always @ (*) //router2
     begin
-        Path_usage_bits_2[0] = Pr2; //2 to 2
+        Path_usage_bits_2[0] = 1'b1; //2 to 2
 
-        Path_usage_bits_2[1] = Er2 & Pr3 ; //2 to 3 //flat
-        Path_usage_bits_2[2] = Sr2  & Er0  & Nr1  & Pr3 ; //2 to 3 longer 2-0-1-3
+        Path_usage_bits_2[1] = Er2  ; //2 to 3 //flat
+        Path_usage_bits_2[2] = Sr2  & Er0  & Nr1   ; //2 to 3 longer 2-0-1-3
 
         Path_usage_bits_2[3] = Sr2 & Pr0; //2 to 0 //vertical
-        Path_usage_bits_2[4] = Er2 & Sr3  & Wr1  & Pr0 ; //2 to 0 longer 2-3-1-0
+        Path_usage_bits_2[4] = Er2 & Sr3  & Wr1   ; //2 to 0 longer 2-3-1-0
 
 
-        Path_usage_bits_2[5] = Sr2 & Er0  & Pr1 ; //2 to 1 //diagonal (vertical) 2-0-1
-        Path_usage_bits_2[6] = Er2 & Sr3  & Pr1 ;  //2 to 1 (flat) 2-3-1
+        Path_usage_bits_2[5] = Sr2 & Er0   ; //2 to 1 //diagonal (vertical) 2-0-1
+        Path_usage_bits_2[6] = Er2 & Sr3   ;  //2 to 1 (flat) 2-3-1
 
     end
     
     always @ (*) //router3
     begin
-        Path_usage_bits_3[0] = Pr3 ; // 3 to 3
+        Path_usage_bits_3[0] = 1'b1 ; // 3 to 3
 
-        Path_usage_bits_3[1] = Wr3  & Pr2 ; //3 to 2 //flat
-        Path_usage_bits_3[2] = Sr3  & Wr1 & Nr0 & Pr2 ; //3 to 2 longer 3-1-0-2
+        Path_usage_bits_3[1] = Wr3   ; //3 to 2 //flat
+        Path_usage_bits_3[2] = Sr3  & Wr1 & Nr0  ; //3 to 2 longer 3-1-0-2
 
-        Path_usage_bits_3[3] = Sr3 & Pr1 ; //3 to 1 //vertical
-        Path_usage_bits_3[4] = Wr3  & Sr2  & Er0 & Pr1 ; //3 to 1 longer 3-2-0-1
+        Path_usage_bits_3[3] = Sr3  ; //3 to 1 //vertical
+        Path_usage_bits_3[4] = Wr3  & Sr2  & Er0; //3 to 1 longer 3-2-0-1
 
-        Path_usage_bits_3[5] = Sr3  & Wr1 & Pr0 ; //3 to 0 //diagonal (vertical) 3-1-0
-        Path_usage_bits_3[6] = Wr3  & Sr2  & Pr0;  //3 to 0 (flat) 3-2-0
+        Path_usage_bits_3[5] = Sr3  & Wr1  ; //3 to 0 //diagonal (vertical) 3-1-0
+        Path_usage_bits_3[6] = Wr3  & Sr2  ;  //3 to 0 (flat) 3-2-0
 
     end
 
